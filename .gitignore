@@ -1,0 +1,40 @@
+# Excel dosyaları - Şirket verileri
+*.xlsx
+*.xls
+*.xlsm
+*.xlsb
+
+# Temizlenmiş veri klasörü
+cleaned_data/
+
+# Yedek klasörleri
+backup_*/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Geçici dosyalar
+*.tmp
+*.temp
+~$*
+
+# Log dosyaları
+*.log
+
+# IDE dosyaları
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS dosyaları
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Analiz raporları (kişisel veri içerebilir)
+analiz_raporu.txt
