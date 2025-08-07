@@ -1,8 +1,23 @@
 # 🤖 Akıllı Üretim Günlüğü Asistanı
 
-**KVKK Uyumlu Vardiya Analiz Sistemi**
+**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.1.0 - Güvenlik Güncellemesi**
+
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
+[![Security](https://img.shields.io/badge/security-enhanced-green.svg)](CHANGELOG.md)
+[![Python](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](requirements.txt)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Bu sistem, SoftExpert'ten alınan vardiya defteri kayıtlarını analiz edip günün özeti, sorunlar ve çözümleri gibi ana noktaları listeler. Kişisel verileri otomatik olarak temizleyerek KVKK uyumluluğu sağlar.
+
+## 🔒 **v1.1.0 Güvenlik Güncellemesi**
+
+**CRITICAL UPDATE**: API key güvenliği artırıldı!
+- ❌ **Kaldırıldı**: Kodda sabit API key'ler
+- ✅ **Eklendi**: Kullanıcı bazlı API key girişi
+- 🔐 **Güvenli**: Her kullanıcı kendi key'ini kullanır
+- 💡 **Yardım**: API key alma rehberi eklendi
+
+[📋 Tüm değişiklikleri gör](CHANGELOG.md)
 
 ## ✨ Özellikler
 
