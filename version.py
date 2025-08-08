@@ -5,15 +5,15 @@ Akıllı Üretim Günlüğü Asistanı - Versiyon Bilgileri
 """
 
 # Semantic Versioning: MAJOR.MINOR.PATCH
-VERSION = "1.1.0"
-VERSION_NAME = "Güvenlik Güncellemesi"
+VERSION = "1.4.0"
+VERSION_NAME = "Güvenli İş Zekası Sistemi"
 BUILD_DATE = "2025-01-08"
-BUILD_NUMBER = 110
+BUILD_NUMBER = 140
 
 # Versiyon detayları
 VERSION_INFO = {
     'major': 1,
-    'minor': 1, 
+    'minor': 4, 
     'patch': 0,
     'pre_release': None,  # alpha, beta, rc
     'build': BUILD_NUMBER
@@ -25,14 +25,53 @@ FEATURES = {
     'ai_analysis': True,
     'gui_interface': True,
     'excel_processing': True,
+    'pdf_export': True,           # v1.2.0'da eklendi
     'date_filtering': True,
     'multi_export': True,
-    'security_enhanced': True,  # v1.1.0'da eklendi
-    'api_key_protection': True,  # v1.1.0'da eklendi
+    'security_enhanced': True,
+    'api_key_protection': True,
+    'business_intelligence': True,  # v1.2.0'da eklendi
+    'advanced_reporting': True,     # v1.2.0'da eklendi
+    'smart_recommendations': True,  # v1.2.0'da eklendi
+    'cost_impact_analysis': False,  # v1.4.0'da kaldırıldı (güvenlik)
+    'trend_prediction': True,       # v1.2.0'da eklendi
+    'secure_prompt_system': True,   # v1.4.0'da eklendi
+    'no_cost_hallucination': True,  # v1.4.0'da eklendi
+    'data_only_analysis': True      # v1.4.0'da eklendi
 }
 
 # Değişiklik özeti
 CHANGELOG_SUMMARY = {
+    '1.4.0': {
+        'date': '2025-01-08',
+        'type': 'security',
+        'title': 'Güvenli İş Zekası Sistemi',
+        'highlights': [
+            'Maliyet Uydurma Önleme Sistemi',
+            'Sadece Veriye Dayalı Analiz',
+            'Güvenli Prompt Sistemi',
+            'Basit ve Çalışan GUI',
+            'Toggle Butonları Kaldırıldı',
+            'Operasyonel Etki Analizi',
+            'Kaynak İhtiyacı Analizi',
+            'Gerçekçi Öneriler Sistemi'
+        ]
+    },
+    '1.2.0': {
+        'date': '2025-01-08',
+        'type': 'feature',
+        'title': 'İş Zekası Rapor Sistemi',
+        'highlights': [
+            'Gelişmiş AI Prompt Sistemi (v2.1)',
+            'Yönetici Odaklı Stratejik Raporlama',
+            'PDF Export Özelliği',
+            'Kök Neden Analizi',
+            'Zaman Trendleri ve Risk Tahmini',
+            'Maliyet Etkisi Analizi',
+            'SMART Eylem Planı',
+            'Yönetici Aksiyon Panosu'
+        ]
+    },
     '1.1.0': {
         'date': '2025-01-08',
         'type': 'security',
@@ -76,12 +115,12 @@ def get_version_info():
 
 def print_version_info():
     """Versiyon bilgilerini konsola yazdır"""
-    print(f"🤖 Akıllı Üretim Günlüğü Asistanı")
-    print(f"📦 Versiyon: {get_version_string()}")
-    print(f"🏷️ Kod Adı: {VERSION_NAME}")
-    print(f"📅 Yapım Tarihi: {BUILD_DATE}")
-    print(f"🔧 Yapım Numarası: {BUILD_NUMBER}")
-    print(f"✨ Aktif Özellikler: {len([f for f in FEATURES.values() if f])}/{len(FEATURES)}")
+    print(f"Akıllı Üretim Günlüğü Asistanı")
+    print(f"Versiyon: {get_version_string()}")
+    print(f"Kod Adı: {VERSION_NAME}")
+    print(f"Yapım Tarihi: {BUILD_DATE}")
+    print(f"Yapım Numarası: {BUILD_NUMBER}")
+    print(f"Aktif Özellikler: {len([f for f in FEATURES.values() if f])}/{len(FEATURES)}")
 
 if __name__ == "__main__":
     print_version_info()

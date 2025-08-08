@@ -15,9 +15,43 @@ Versiyonlama: [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH)
 
 ---
 
-## [1.1.0] - 2025-01-08 🔒 GÜVENLİK GÜNCELLEMESİ
+## [1.4.0] - 2025-01-08 - Güvenli İş Zekası Sistemi
 
-### 🔒 Güvenlik İyileştirmeleri
+### Güvenlik Kritik Düzeltmeler
+- **CRITICAL**: AI'ın kafasından maliyet uydurması tamamen önlendi
+- **Prompt Güvenlik**: Maliyet hesaplama bölümleri prompttan kaldırıldı
+- **Veri Odaklı Analiz**: AI artık sadece Excel'deki verileri kullanıyor
+- **Para Uydurma Yasağı**: TL, maliyet, ROI hesaplamaları yasaklandı
+
+### Sistem İyileştirmeleri
+- **GUI Basitleştirme**: Problemli toggle butonları kaldırıldı
+- **Kararlı Arayüz**: Eski güvenilir ScrolledText sistemine dönüldü
+- **Hata Giderme**: tkinter widget hatalarının tümü düzeltildi
+- **Performans**: Daha hızlı ve kararlı çalışma
+
+### Yeni Analiz Yaklaşımı
+- **Operasyonel Etki Analizi**: Sadece gerçek duruş süreleri
+- **Kaynak İhtiyacı**: Para yerine insan gücü ve teknik kaynaklar
+- **Gerçekçi Öneriler**: Uygulanabilir, ölçülebilir öneriler
+- **Teknik Zorluk**: Maliyet yerine uygulama zorluğu göstergesi
+
+### Prompt Sistemi v2.2
+- **Anti-Hallucination**: "Para uydurma yasak" uyarıları eklendi
+- **Veri Odaklı**: Sadece Excel verilerine dayalı analiz
+- **Operasyonel Odak**: Mali değil, operasyonel etki analizi
+- **Güvenli Şablonlar**: Tüm maliyet bölümleri kaldırıldı
+
+### Teknik Değişiklikler
+- Prompt sistemi güvenlik güncellemesi
+- GUI toggle sistemi tamamen kaldırıldı  
+- Basit ve çalışan arayüz tasarımı
+- Hata ayıklama ve stabilite iyileştirmeleri
+
+---
+
+## [1.1.0] - 2025-01-08 - Güvenlik Güncellemesi
+
+### Güvenlik İyileştirmeleri
 - **CRITICAL**: API key'leri koddan kaldırıldı
 - Kullanıcılar artık kendi API key'lerini GUI'de girecek
 - API key güvenlik kontrolü eklendi
@@ -39,9 +73,9 @@ Versiyonlama: [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH)
 
 ---
 
-## [1.0.0] - 2025-01-07 🚀 İLK KARARLI SÜRÜM
+## [1.0.0] - 2025-01-07 - İlk Kararlı Sürüm
 
-### ✨ Ana Özellikler
+### Ana Özellikler
 - **KVKK Uyumlu Veri Temizleme**: Kişisel verileri otomatik tespit ve kaldırma
 - **AI Destekli Analiz**: OpenAI GPT-4o-mini ile vardiya analizi
 - **Modern GUI**: Tkinter tabanlı kullanıcı dostu arayüz

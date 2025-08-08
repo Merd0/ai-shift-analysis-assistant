@@ -78,14 +78,26 @@ class CimentoVardiyaAI:
 5. TREND: Tekrarlanan sorunlar, risk analizi
 """
 
-    def analyze_shift_data(self, data: pd.DataFrame, date_range: str = "günlük") -> Dict:
-        """Vardiya verilerini analiz et"""
+    def analyze_shift_data(self, data: pd.DataFrame, date_range: str = "günlük", 
+                          analysis_options: List[str] = None, user_question: str = "") -> Dict:
+        """
+        Vardiya verilerini gelişmiş AI sistemi ile analiz et
+        
+        Args:
+            data: Analiz edilecek vardiya verileri
+            date_range: Analiz periyodu ("günlük", "haftalık", vb.)
+            analysis_options: İstenilen rapor bölümleri listesi
+            user_question: Kullanıcının özel sorusu
+            
+        Returns:
+            Dict: AI analiz sonuçları
+        """
         
         # Veriyi özetleyerek token tasarrufu
         summary_data = self._summarize_data(data)
         
-        # AI prompt oluştur
-        prompt = self._create_analysis_prompt(summary_data, date_range)
+        # Yeni gelişmiş AI prompt oluştur
+        prompt = self._create_analysis_prompt(summary_data, date_range, analysis_options, user_question)
         
         # AI analizi çağır
         analysis = self._call_openai_api(prompt)
@@ -135,54 +147,38 @@ class CimentoVardiyaAI:
         
         return "\n".join(summary_parts)
 
-    def _create_analysis_prompt(self, summary_data: str, date_range: str) -> str:
-        """Çimento fabrikası için optimize edilmiş prompt"""
+    def _create_analysis_prompt(self, summary_data: str, date_range: str, analysis_options: List[str] = None, user_question: str = "") -> str:
+        """Yeni gelişmiş prompt sistemi ile analiz prompt'u oluştur"""
         
-        prompt = f"""
-{self.cement_context}
-
-## ANALİZ EDİLECEK VERİ ({date_range.upper()}):
-{summary_data}
-
-## GÖREV:
-Bu çimento fabrikası vardiya verilerini analiz ederek aşağıdaki formatta TÜRKÇE rapor hazırla:
-
-### 📊 GÜNLÜK ÖZET:
-- Üretim durumu (normal/sorunlu)
-- Toplam duruş sayısı ve süresi
-- En aktif vardiya (gece/gündüz)
-
-### ⚠️ TESPİT EDİLEN SORUNLAR:
-- Ekipman arızaları (ÇD, ÇİM, Fırın, vb.)
-- Kalite sorunları (CSO değerleri)
-- Operasyonel sorunlar
-- Her sorun için: [EKİPMAN] - [SORUN] - [SÜRE/ETKİ]
-
-### ✅ UYGULANAN ÇÖZÜMLER:
-- Alınan aksiyonlar
-- Çözüm süreleri
-- Etkililiği
-
-### 🎯 ÖNERİLER:
-- Önleyici bakım önerileri
-- Süreç iyileştirmeleri
-- Risk azaltma önerileri
-
-### 📈 TREND ANALİZİ:
-- Tekrarlanan sorunlar
-- Risk faktörleri
-- Dikkat edilmesi gerekenler
-
-## ÖNEMLİ KURALLAR:
-1. Sadece verilen bilgileri kullan, ek bilgi ekleme
-2. Çimento üretim terminolojisi kullan
-3. Kısa ve net cümleler
-4. Sayısal veriler varsa belirt
-5. Spekülasyon yapma, sadece gözlem
-
-RAPOR:
-"""
-        return prompt
+        # Yeni prompt sistemini import et
+        from prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
+        
+        # Varsayılan analiz seçenekleri
+        if analysis_options is None:
+            analysis_options = [
+                "🎯 Yönetici Özeti",
+                "📊 Performans Karnesi", 
+                "🔍 Kök Neden Analizi",
+                "📈 Zaman Trendleri ve Risk Tahmini",
+                "💰 Maliyet Etkisi Tahmini",
+                "💡 SMART Eylem Planı",
+                "📌 Yönetici Aksiyon Panosu"
+            ]
+        
+        # Analiz seçeneklerini formatla
+        formatted_options = "\n".join([f"✅ {option}" for option in analysis_options])
+        
+        # Yeni prompt template'ini kullan
+        user_prompt = USER_PROMPT_TEMPLATE.format(
+            data_summary=summary_data,
+            analysis_options=formatted_options,
+            user_question=user_question if user_question else "Yok"
+        )
+        
+        # System prompt + User prompt kombinasyonu
+        full_prompt = f"{SYSTEM_PROMPT}\n\n{user_prompt}"
+        
+        return full_prompt
 
     def _call_openai_api(self, prompt: str) -> Dict:
         """OpenAI API çağrısı - optimize edilmiş"""
@@ -193,25 +189,21 @@ RAPOR:
                 model=self.model,
                 messages=[
                     {
-                        "role": "system", 
-                        "content": "Sen çimento fabrikası vardiya analizi uzmanısın. Verilen verileri analiz ederek profesyonel raporlar hazırlarsın."
-                    },
-                    {
                         "role": "user", 
-                        "content": prompt
+                        "content": prompt  # Prompt zaten system + user içeriyor
                     }
                 ],
                 max_tokens=self.max_tokens,
-                temperature=self.temperature,
-                top_p=0.9,  # Token verimliliği için
-                frequency_penalty=0.1,  # Tekrarları azalt
-                presence_penalty=0.1   # Çeşitliliği artır
+                temperature=0.8,  # Yaratıcılığı artır
+                top_p=0.95,  # Çeşitliliği artır
+                frequency_penalty=0.6,  # Tekrarları güçlü şekilde azalt
+                presence_penalty=0.6   # Yeni konuları teşvik et
             )
             
             analysis_text = response.choices[0].message.content
             
-            # Yanıtı yapılandırılmış formata çevir
-            structured_analysis = self._parse_analysis_response(analysis_text)
+            # Yanıtı yapılandırılmış formata çevir (şimdilik basit format)
+            structured_analysis = analysis_text
             
             # Token kullanımını logla
             token_usage = {

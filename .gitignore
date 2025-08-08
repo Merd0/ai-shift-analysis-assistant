@@ -1,40 +1,27 @@
-# Excel dosyaları - Şirket verileri
+# Test ve örnek dosyalar
+*.pdf
 *.xlsx
 *.xls
-*.xlsm
-*.xlsb
-
-# Temizlenmiş veri klasörü
-cleaned_data/
-
-# Yedek klasörleri
-backup_*/
+analiz_raporu.txt
+verify_analysis.py
+git_deploy.py
 
 # Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
+*$py.class
+*.so
 
-# Geçici dosyalar
-*.tmp
-*.temp
-~$*
+# Environment variables
+.env
+.env.local
 
-# Log dosyaları
-*.log
-
-# IDE dosyaları
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS dosyaları
+# OS
 .DS_Store
 Thumbs.db
-desktop.ini
-
-# Analiz raporları (kişisel veri içerebilir)
-analiz_raporu.txt

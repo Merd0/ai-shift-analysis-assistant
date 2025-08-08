@@ -12,22 +12,12 @@ import os
 from datetime import datetime, timedelta
 import threading
 from excel_analyzer import ExcelAnalyzer, KVKKDataCleaner
-from version import get_version_string, VERSION_NAME
 
 class VardiyaGUI:
     def __init__(self):
         self.window = tk.Tk()
-        self.window.title(f"🤖 Akıllı Üretim Günlüğü Asistanı - {get_version_string()}")
-        self.window.geometry("1200x800")  # Daha büyük başlangıç boyutu
-        self.window.minsize(1000, 600)  # Minimum boyut
-        
-        # Pencereyi ekranın ortasına yerleştir
-        self.window.update_idletasks()
-        width = self.window.winfo_width()
-        height = self.window.winfo_height()
-        x = (self.window.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.window.winfo_screenheight() // 2) - (height // 2)
-        self.window.geometry(f"{width}x{height}+{x}+{y}")
+        self.window.title("🤖 Akıllı Üretim Günlüğü Asistanı")
+        self.window.geometry("1000x700")
         self.window.configure(bg='#f0f0f0')
         
         # Analyzer'ı başlat
@@ -71,7 +61,6 @@ class VardiyaGUI:
         self.create_date_filter_tab()
         self.create_ai_analysis_tab()
         self.create_reports_tab()
-        self.create_about_tab()
         
     def create_file_analysis_tab(self):
         """Dosya analizi sekmesi"""
@@ -174,11 +163,6 @@ class VardiyaGUI:
         self.api_key_entry = ttk.Entry(api_frame, width=50, show='*')
         self.api_key_entry.grid(row=0, column=1, padx=5, sticky='ew')
         
-        # API Key yardım mesajı
-        help_label = ttk.Label(api_frame, text="💡 OpenAI hesabınızdan API key alın: https://platform.openai.com/api-keys", 
-                              style='Info.TLabel', foreground='blue')
-        help_label.grid(row=2, column=0, columnspan=2, sticky='w', pady=(5,0))
-        
         ttk.Label(api_frame, text="Model:").grid(row=1, column=0, sticky='w')
         self.model_var = tk.StringVar(value="gpt-4o-mini")
         model_combo = ttk.Combobox(api_frame, textvariable=self.model_var, 
@@ -225,7 +209,6 @@ class VardiyaGUI:
         
         self.ai_result_text = scrolledtext.ScrolledText(ai_result_frame, height=15, width=80)
         self.ai_result_text.pack(fill='both', expand=True)
-
         
     def create_reports_tab(self):
         """Raporlar sekmesi"""
@@ -260,15 +243,7 @@ class VardiyaGUI:
         preview_frame = ttk.LabelFrame(frame, text="👁️ Rapor Önizleme", padding=10)
         preview_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
-        self.report_preview = scrolledtext.ScrolledText(
-            preview_frame, 
-            height=30,  # Daha yüksek
-            width=100,  # Daha geniş
-            wrap=tk.WORD,
-            font=('Consolas', 9),
-            bg='#f8f9fa',
-            fg='#212529'
-        )
+        self.report_preview = scrolledtext.ScrolledText(preview_frame, height=20, width=80)
         self.report_preview.pack(fill='both', expand=True)
         
     def select_file(self):
@@ -451,59 +426,35 @@ class VardiyaGUI:
         threading.Thread(target=self.run_ai_analysis, args=(api_key,), daemon=True).start()
     
     def run_ai_analysis(self, api_key):
-        """AI analizini çalıştır (thread'de) - Yeni Gelişmiş Sistem"""
+        """AI analizini çalıştır (thread'de)"""
         try:
-            # Yeni AI analyzer'ı import et
-            from ai_analyzer import CimentoVardiyaAI
+            import openai
             
-            # AI sistemi oluştur
-            ai_system = CimentoVardiyaAI(api_key=api_key)
+            # OpenAI client'ı ayarla
+            client = openai.OpenAI(api_key=api_key)
             
             # Analiz edilecek veriyi hazırla
             data_to_analyze = getattr(self, 'filtered_data', self.current_data)
             
-            # Seçili analiz türlerini al ve formatla
-            selected_analyses = []
-            option_mapping = {
-                'genel_ozet': '🎯 Yönetici Özeti',
-                'sorun_analizi': '🔍 Kök Neden Analizi', 
-                'cozum_onerileri': '💡 SMART Eylem Planı',
-                'trend_analizi': '📈 Zaman Trendleri ve Risk Tahmini',
-                'performans_metrikleri': '📊 Performans Karnesi'
-            }
+            # Seçili analiz türlerini al
+            selected_analyses = [key for key, var in self.analysis_options.items() if var.get()]
             
-            for key, var in self.analysis_options.items():
-                if var.get() and key in option_mapping:
-                    selected_analyses.append(option_mapping[key])
+            # AI prompt'unu oluştur
+            prompt = self.create_ai_prompt(data_to_analyze, selected_analyses)
             
-            # Eğer hiçbiri seçilmemişse, tümünü ekle
-            if not selected_analyses:
-                selected_analyses = list(option_mapping.values())
-                # Ek bölümler de ekle
-                selected_analyses.extend([
-                    '💰 Maliyet Etkisi Tahmini',
-                    '📌 Yönetici Aksiyon Panosu'
-                ])
-            
-            # Yeni AI analiz sistemini çağır
-            analysis_result = ai_system.analyze_shift_data(
-                data=data_to_analyze,
-                date_range="seçili tarih aralığı",
-                analysis_options=selected_analyses,
-                user_question=""
+            # AI'ya gönder
+            response = client.chat.completions.create(
+                model=self.model_var.get(),
+                messages=[
+                    {"role": "system", "content": "Sen bir üretim analisti uzmanısın. Vardiya verilerini analiz edip detaylı raporlar hazırlarsın."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=2000
             )
             
-            # Analiz sonucunu al
-            if analysis_result and 'raw_response' in analysis_result:
-                result = analysis_result['raw_response']
-            elif analysis_result and 'analysis' in analysis_result:
-                result = analysis_result['analysis']
-            elif analysis_result and 'content' in analysis_result:
-                result = analysis_result['content']
-            else:
-                result = str(analysis_result)
-            
             # Sonucu GUI'de göster
+            result = response.choices[0].message.content
             self.window.after(0, self.display_ai_result, result)
             
         except Exception as e:
@@ -511,21 +462,56 @@ class VardiyaGUI:
         finally:
             self.window.after(0, self.progress.stop)
     
-    # create_ai_prompt metodu kaldırıldı - Artık CimentoVardiyaAI sınıfı kullanılıyor
+    def create_ai_prompt(self, data, selected_analyses):
+        """AI için prompt oluştur"""
+        data_sample = data.head(20).to_string()  # İlk 20 satırı örnek olarak al
+        
+        prompt = f"""
+Vardiya verileri analizi yapılacak. Aşağıdaki veriler SoftExpert sisteminden alınmıştır:
+
+VERİ ÖRNEĞİ:
+{data_sample}
+
+TOPLAM KAYIT SAYISI: {len(data)}
+
+Lütfen aşağıdaki analizleri yap:
+"""
+        
+        if 'genel_ozet' in selected_analyses:
+            prompt += "\n1. GENEL ÖZET: Verilerin genel durumu, ana bulgular"
+        
+        if 'sorun_analizi' in selected_analyses:
+            prompt += "\n2. SORUN ANALİZİ: Tespit edilen problemler, sık yaşanan durumlar"
+        
+        if 'cozum_onerileri' in selected_analyses:
+            prompt += "\n3. ÇÖZÜM ÖNERİLERİ: Sorunlar için pratik çözüm önerileri"
+        
+        if 'trend_analizi' in selected_analyses:
+            prompt += "\n4. TREND ANALİZİ: Zaman içindeki değişimler, eğilimler"
+        
+        if 'performans_metrikleri' in selected_analyses:
+            prompt += "\n5. PERFORMANS METRİKLERİ: Sayısal göstergeler, KPI'lar"
+        
+        prompt += """
+
+RAPOR FORMATI:
+- Türkçe yazın
+- Madde madde düzenleyin  
+- Sayısal verilerle destekleyin
+- Eylem planları önerin
+- Yönetici raporu formatında yazın
+"""
+        
+        return prompt
     
     def display_ai_result(self, result):
-        """AI sonucunu göster - tam sayfa görüntüleme"""
+        """AI sonucunu göster"""
         self.ai_result_text.delete(1.0, tk.END)
         self.ai_result_text.insert(tk.END, f"🤖 AI ANALİZ SONUCU\n{'='*50}\n\n{result}")
-        
-        # AI sekmesine otomatik geç
-        self.notebook.select(2)  # AI Analizi sekmesi
         
         # Rapor önizlemesine de kopyala
         self.report_preview.delete(1.0, tk.END)
         self.report_preview.insert(tk.END, result)
-    
-
     
     def display_ai_error(self, error):
         """AI hatasını göster"""
@@ -535,105 +521,13 @@ class VardiyaGUI:
     
     def export_pdf(self):
         """PDF rapor export et"""
-        try:
-            from reportlab.lib.pagesizes import A4
-            from reportlab.lib.styles import getSampleStyleSheet
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-            from reportlab.lib.units import cm
-            from reportlab.lib.colors import HexColor
-            import re
-            
-            # AI rapor içeriğini al
-            ai_report = self.ai_result_text.get(1.0, tk.END).strip()
-            if not ai_report or len(ai_report.strip()) < 20:
-                messagebox.showwarning("Uyarı", "Export edilecek AI raporu yok! Önce AI analizi yapın.")
-                return
-            
-            print(f"🔍 PDF Export: AI rapor uzunluğu = {len(ai_report)} karakter")
-            
-            file_path = filedialog.asksaveasfilename(
-                title="PDF Rapor Kaydet",
-                defaultextension=".pdf",
-                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
-            )
-            
-            if file_path:
-                # PDF oluştur
-                doc = SimpleDocTemplate(file_path, pagesize=A4, topMargin=2*cm, bottomMargin=2*cm)
-                styles = getSampleStyleSheet()
-                story = []
-                
-                # Başlık stili
-                title_style = styles['Title']
-                title_style.textColor = HexColor('#2E5BBA')
-                
-                # Başlık
-                title = Paragraph("AI Vardiya Analiz Raporu", title_style)
-                story.append(title)
-                story.append(Spacer(1, 1*cm))
-                
-                # Tarih
-                date_para = Paragraph(f"Rapor Tarihi: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal'])
-                story.append(date_para)
-                story.append(Spacer(1, 0.5*cm))
-                
-                # AI rapor içeriği - Problemsiz ASCII formatla
-                for line in ai_report.split('\n'):
-                    if line.strip():
-                        # Tüm özel karakterleri temizle ve ASCII'ye çevir
-                        clean_line = line.strip()
-                        
-                        # Emojileri kaldır
-                        clean_line = re.sub(r'[🤖📊⚠️💡📈📉🔧⭐🎯✅❌🏭⚡🔍📋]', '', clean_line)
-                        
-                        # Türkçe karakterleri ASCII karşılıklarına çevir
-                        turkish_chars = {
-                            'ç': 'c', 'Ç': 'C', 'ğ': 'g', 'Ğ': 'G', 'ı': 'i', 'I': 'I',
-                            'İ': 'I', 'ö': 'o', 'Ö': 'O', 'ş': 's', 'Ş': 'S', 'ü': 'u', 'Ü': 'U'
-                        }
-                        for tr_char, en_char in turkish_chars.items():
-                            clean_line = clean_line.replace(tr_char, en_char)
-                        
-                        # Diğer özel karakterleri temizle
-                        clean_line = clean_line.replace('=', '').replace('*', '').strip()
-                        
-                        if clean_line:
-                            # Başlık kontrolü
-                            if (line.startswith('#') or 
-                                any(keyword in clean_line.upper() for keyword in [
-                                    'GENEL OZET', 'SORUN ANALIZI', 'COZUM ONERILERI', 
-                                    'TREND ANALIZI', 'PERFORMANS METRIKLERI', 
-                                    'YONETICI OZETI', 'KOK NEDEN', 'EYLEM PLANI', 
-                                    'MALIYET ETKISI', 'AKSIYON PANOSU'
-                                ])):
-                                header_style = styles['Heading2']
-                                header_style.textColor = HexColor('#4472C4')
-                                para = Paragraph(clean_line, header_style)
-                            else:
-                                para = Paragraph(clean_line, styles['Normal'])
-                            
-                            story.append(para)
-                            story.append(Spacer(1, 0.2*cm))
-                
-                doc.build(story)
-                messagebox.showinfo("Başarılı", f"PDF rapor kaydedildi:\n{file_path}")
-                
-        except ImportError as e:
-            messagebox.showerror("Hata", f"PDF export için kütüphane hatası:\n{str(e)}\n\nKurulum: pip install reportlab")
-        except Exception as e:
-            messagebox.showerror("Hata", f"PDF export hatası:\n{str(e)}")
+        messagebox.showinfo("Bilgi", "PDF export özelliği geliştirilecek!")
     
     def export_excel(self):
-        """Excel rapor export et - AI analiz sonuçlarını içerir"""
-        # AI rapor içeriğini kontrol et
-        ai_report = self.ai_result_text.get(1.0, tk.END).strip()
-        
-        # Daha esnek kontrol - AI raporu varsa export et
-        if not ai_report or len(ai_report.strip()) < 20:
-            messagebox.showwarning("Uyarı", "Export edilecek AI raporu yok! Önce AI analizi yapın.")
+        """Excel rapor export et"""
+        if not hasattr(self, 'filtered_data') and self.current_data is None:
+            messagebox.showwarning("Uyarı", "Export edilecek veri yok!")
             return
-        
-        print(f"🔍 Excel Export: AI rapor uzunluğu = {len(ai_report)} karakter")
         
         file_path = filedialog.asksaveasfilename(
             title="Excel Rapor Kaydet",
@@ -643,208 +537,15 @@ class VardiyaGUI:
         
         if file_path:
             try:
-                import pandas as pd
-                from openpyxl import Workbook
-                from openpyxl.styles import Font, Alignment, PatternFill
-                
-                # Yeni workbook oluştur
-                wb = Workbook()
-                ws = wb.active
-                ws.title = "AI Analiz Raporu"
-                
-                # Başlık stili
-                title_font = Font(name='Arial', size=16, bold=True, color='FFFFFF')
-                title_fill = PatternFill(start_color='366092', end_color='366092', fill_type='solid')
-                header_font = Font(name='Arial', size=12, bold=True, color='FFFFFF')
-                header_fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
-                
-                # Ana başlık
-                ws['A1'] = '🤖 AI Vardiya Analiz Raporu'
-                ws['A1'].font = title_font
-                ws['A1'].fill = title_fill
-                ws['A1'].alignment = Alignment(horizontal='center')
-                ws.merge_cells('A1:D1')
-                
-                # Tarih
-                ws['A3'] = 'Rapor Tarihi:'
-                ws['B3'] = str(datetime.now().strftime('%d/%m/%Y %H:%M'))
-                
-                # AI rapor içeriğini düzenli bloklar halinde ekle
-                current_row = 5
-                current_section = ""
-                
-                for line in ai_report.split('\n'):
-                    line_stripped = line.strip()
-                    if not line_stripped:
-                        continue
-                        
-                    # Başlık tespiti
-                    is_header = (line.startswith('#') or 
-                                any(keyword in line_stripped.upper() for keyword in [
-                                    'GENEL ÖZET', 'SORUN ANALİZİ', 'ÇÖZÜM ÖNERİLERİ', 
-                                    'TREND ANALİZİ', 'PERFORMANS METRİKLERİ', 'YÖNETİCİ ÖZETİ',
-                                    'KÖK NEDEN', 'EYLEM PLANI', 'MALİYET ETKİSİ', 'AKSİYON PANOSU'
-                                ]))
-                    
-                    if is_header:
-                        # Bölüm arası boşluk
-                        if current_row > 5:
-                            current_row += 1
-                            
-                        # Başlık ekle
-                        clean_header = line_stripped.replace('#', '').replace('*', '').strip()
-                        ws[f'A{current_row}'] = clean_header
-                        ws[f'A{current_row}'].font = header_font
-                        ws[f'A{current_row}'].fill = header_fill
-                        ws.merge_cells(f'A{current_row}:E{current_row}')
-                        ws.row_dimensions[current_row].height = 25
-                        current_row += 1
-                        current_section = clean_header
-                    else:
-                        # İçerik ekle
-                        clean_content = line_stripped.replace('*', '').replace('-', '').strip()
-                        if clean_content:
-                            # Uzun metinleri böl
-                            if len(clean_content) > 80:
-                                ws[f'A{current_row}'] = clean_content
-                                ws.merge_cells(f'A{current_row}:E{current_row}')
-                                ws[f'A{current_row}'].alignment = Alignment(wrap_text=True, vertical='top')
-                                ws.row_dimensions[current_row].height = 40
-                            else:
-                                ws[f'A{current_row}'] = clean_content
-                                ws.merge_cells(f'A{current_row}:E{current_row}')
-                                ws[f'A{current_row}'].alignment = Alignment(wrap_text=True, vertical='top')
-                                ws.row_dimensions[current_row].height = 20
-                            current_row += 1
-                
-                # Kolon genişlikleri - Excel formatı için optimize
-                ws.column_dimensions['A'].width = 100
-                ws.column_dimensions['B'].width = 25
-                ws.column_dimensions['C'].width = 25
-                ws.column_dimensions['D'].width = 25
-                ws.column_dimensions['E'].width = 25
-                
-                # Ham veri sekmesi kaldırıldı - Sadece AI raporu export edilir
-                
-                wb.save(file_path)
-                messagebox.showinfo("Başarılı", f"AI Analiz Raporu kaydedildi: {file_path}")
-                
+                data_to_export = getattr(self, 'filtered_data', self.current_data)
+                data_to_export.to_excel(file_path, index=False)
+                messagebox.showinfo("Başarılı", f"Rapor kaydedildi: {file_path}")
             except Exception as e:
-                print(f"❌ Excel Export Hatası: {str(e)}")
-                import traceback
-                traceback.print_exc()
-                messagebox.showerror("Hata", f"Excel export hatası:\n{str(e)}\n\nDetaylı hata terminalde gösterildi.")
+                messagebox.showerror("Hata", f"Export hatası: {str(e)}")
     
     def export_word(self):
         """Word rapor export et"""
         messagebox.showinfo("Bilgi", "Word export özelliği geliştirilecek!")
-    
-    def create_about_tab(self):
-        """Hakkında sekmesi"""
-        frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="ℹ️ Hakkında")
-        
-        # Ana container
-        main_frame = ttk.Frame(frame)
-        main_frame.pack(fill='both', expand=True, padx=20, pady=20)
-        
-        # Başlık
-        title_label = ttk.Label(main_frame, text="🤖 Akıllı Üretim Günlüğü Asistanı", 
-                               style='Title.TLabel')
-        title_label.pack(pady=(0, 10))
-        
-        # Versiyon bilgileri
-        version_frame = ttk.LabelFrame(main_frame, text="📦 Versiyon Bilgileri", padding=15)
-        version_frame.pack(fill='x', pady=(0, 15))
-        
-        from version import get_version_info, CHANGELOG_SUMMARY
-        version_info = get_version_info()
-        
-        version_text = f"""
-🏷️ Versiyon: {version_info['full_version']}
-📋 Kod Adı: {version_info['version_name']}
-📅 Yapım Tarihi: {version_info['build_date']}
-🔧 Yapım Numarası: {version_info['build_number']}
-
-🆕 Son Güncelleme: {VERSION_NAME}
-✨ Aktif Özellik: {len([f for f in version_info['features'].values() if f])} / {len(version_info['features'])}
-"""
-        
-        version_label = ttk.Label(version_frame, text=version_text.strip(), 
-                                 style='Info.TLabel', justify='left')
-        version_label.pack(anchor='w')
-        
-        # Özellikler
-        features_frame = ttk.LabelFrame(main_frame, text="✨ Özellikler", padding=15)
-        features_frame.pack(fill='x', pady=(0, 15))
-        
-        features_text = """
-🔒 KVKK Uyumlu Veri Temizleme
-🤖 AI Destekli Vardiya Analizi (GPT-4o-mini)
-🖥️ Modern Grafik Kullanıcı Arayüzü
-📊 Excel Dosyası İşleme ve Analiz
-📅 Esnek Tarih Filtreleme Sistemi
-📄 Çoklu Format Export (PDF/Excel/Word)
-🔐 Güvenli API Key Yönetimi
-📈 Gerçek Zamanlı Progress Gösterimi
-"""
-        
-        features_label = ttk.Label(features_frame, text=features_text.strip(), 
-                                  style='Info.TLabel', justify='left')
-        features_label.pack(anchor='w')
-        
-        # Değişiklik günlüğü
-        changelog_frame = ttk.LabelFrame(main_frame, text="📋 Son Değişiklikler", padding=15)
-        changelog_frame.pack(fill='both', expand=True)
-        
-        changelog_text = scrolledtext.ScrolledText(changelog_frame, height=8, width=60)
-        changelog_text.pack(fill='both', expand=True)
-        
-        # Changelog içeriği
-        changelog_content = """📋 DEĞIŞIKLIK GÜNLÜĞÜ
-
-🔒 v1.1.0 - Güvenlik Güncellemesi (2025-01-08)
-  ✅ API key'leri koddan kaldırıldı
-  ✅ Kullanıcı bazlı API key girişi
-  ✅ Güvenlik kontrolü eklendi
-  ✅ Config dosyası güvenli hale getirildi
-  ✅ API key yardım linki eklendi
-
-🚀 v1.0.0 - İlk Kararlı Sürüm (2025-01-07)
-  ✅ KVKK uyumlu veri temizleme sistemi
-  ✅ AI destekli vardiya analiz motoru
-  ✅ Modern GUI arayüzü (4 sekme)
-  ✅ Excel işleme ve otomatik analiz
-  ✅ Tarih bazlı filtreleme (1-180 gün)
-  ✅ Çoklu export seçenekleri
-  ✅ Gerçek üretim verisi ile test edildi
-  ✅ 4,427 kayıtlık veri seti doğrulandı
-
-🔧 Teknik Detaylar:
-  • Python 3.8+ uyumlu
-  • OpenAI GPT-4o-mini entegrasyonu
-  • Pandas, NumPy, OpenPyXL kullanımı
-  • Modüler ve genişletilebilir kod yapısı
-  • Comprehensive error handling
-
-🎯 Test Durumu:
-  ✅ KVKK temizleme algoritması: %100 başarılı
-  ✅ AI analiz doğruluğu: %90+ doğru
-  ✅ GUI fonksiyonalitesi: Tam çalışır
-  ✅ Export işlemleri: Excel çalışır
-"""
-        
-        changelog_text.insert(tk.END, changelog_content)
-        changelog_text.config(state='disabled')
-        
-        # Alt bilgi
-        footer_frame = ttk.Frame(main_frame)
-        footer_frame.pack(fill='x', pady=(15, 0))
-        
-        footer_text = "💡 Bu yazılım KVKK uyumlu vardiya analizi için geliştirilmiştir."
-        footer_label = ttk.Label(footer_frame, text=footer_text, 
-                                style='Info.TLabel', justify='center')
-        footer_label.pack()
     
     def run(self):
         """Uygulamayı çalıştır"""

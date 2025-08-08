@@ -5,7 +5,7 @@ OPENAI_API_KEY = ""  # Boş - güvenlik için
 
 # Model ayarları
 MODEL_NAME = "gpt-4o-mini"  # En uygun fiyat/performans
-MAX_TOKENS = 2000
+MAX_TOKENS = 6000  # Çok önerili detaylı analiz için
 TEMPERATURE = 0.7
 
 # Türkçe prompt ayarları
