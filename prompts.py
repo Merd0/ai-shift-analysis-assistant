@@ -28,7 +28,7 @@ Bu rapor:
 🎯 HEDEF KİTLE:
 Üst yönetim ve teknik ekip liderleri. Hem stratejik kararlar alacak hem de teknik detayları anlayabilecek seviyede:
 - Teknik terimleri açıklayarak kullan.
-- Etkileri, maliyetleri ve çözüm yollarını sayısal verilerle destekle.
+- Etkileri ve çözüm yollarını sayısal verilerle destekle (finansal tahmin uydurma yok).
 - Grafiksel gösterimler ve tablolarla görselleştir.
 - Her öneri için uygulama adımlarını detaylandır.
 
@@ -41,11 +41,11 @@ Bu rapor:
 - Genel laflar yerine SPESİFİK bulgular ve rakamlar kullan
 
 📊 **BÖLÜM BAZLI KURALLER:**
-1. **Yönetici Özeti:** Sadece en kritik 3 bulgu, toplam finansal etki, 2 acil eylem
+1. **Yönetici Özeti:** En kritik 3 bulgu, 2 acil eylem, yönetici karar noktaları
 2. **KPI Dashboard:** Sadece sayısal metrikler, tablolar, grafiksel gösterimler
 3. **Kök Neden:** Sadece neden-sonuç ilişkileri, kategoriler, alt nedenler
 4. **Zaman Analizi:** Sadece trendler, projeksiyonlar, gelecek tahminleri
-5. **Maliyet Analizi:** Sadece finansal hesaplamalar, ROI, maliyetler
+5. **Operasyonel Etki ve Kaynak İhtiyacı:** Üretim/kalite/verimlilik etkileri ve gereken kaynaklar
 6. **Eylem Planı:** EN AZ 8-10 FARKLI ÖNERİ, her biri benzersiz çözüm
 7. **Operasyonel Etki:** Sadece üretim, kalite, verimlilik etkileri
 8. **Yol Haritası:** Sadece zaman planları, milestone'lar, takvim
@@ -64,9 +64,16 @@ Bu rapor:
 2. Sayısal veriler arasındaki gizli ilişkileri bul
 3. Sektör benchmarkları ile karşılaştır (genel bilgi)
 4. Her sorun için 2-3 farklı çözüm yolu öner
-5. **MALIYET UYDURMA YASAK!** Sadece verideki duruş sürelerini analiz et
+5. **PARA UYDURMA YASAK!** Sadece veriye dayalı operasyonel etkileri analiz et
 6. Risk faktörlerini olasılık x etki ile değerlendir
 7. Başarı metriklerini ölçülebilir şekilde tanımla
+ 
+🧪 **KALİTE & TUTARLILIK KURALLARI:**
+- Yüzdelik dağılımlar daima 100'e normalize edilmeli (±1 yuvarlama toleransı). Son satırda "Toplam = %100" yaz.
+- Mutlaka hem adet (N) hem yüzde (%) ver. Dayanak alınan toplam kayıt sayısını belirt.
+- Aynı öğeyi birden fazla bölümde tekrarlama; her bölümde yeni katkı sun.
+- Dış bağlantılar/markdown resimleri kullanma; sadece düz metin ve tablolar üret. Gerekirse ASCII bar/tablolar kullan.
+- Her ana bölümün sonunda 1 satır "Güven Düzeyi: Yüksek/Orta/Düşük" yaz.
 """
 
 
@@ -101,7 +108,7 @@ Tarih – Ekipman – Arıza Türü – Süre – Açıklama – Müdahale
 - EN AZ 8-10 FARKLI ÖNERİ yap, aynı önerileri tekrarlama
 - SPESİFİK rakamlar ve detaylar ver, genel laflar etme
 - Her bölümü FARKLI açılardan yaklaş
-- **DİKKAT: PARA UYDURMA YASAK!** Maliyet, fiyat, TL değeri ASLA uydurma! Sadece verideki bilgileri kullan!
+ - **DİKKAT: PARA UYDURMA YASAK!** Maliyet, fiyat, TL değeri ASLA uydurma! Sadece verideki bilgileri kullan!
 
 Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri içeren bir rapor üret:
 
@@ -112,33 +119,33 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 ---
 
 ## 🎯 1. YÖNETİCİ ÖZETİ (EXECUTIVE SUMMARY)
-- **Kritik Bulgular (5-6 madde):** En önemli sorunlar ve fırsatlar
-- **Operasyonel Etki Analizi:** Sadece verideki duruş süreleri ve etkileri
-- **Acil Eylem Gerektiren Durumlar (3-4 madde):** Hemen müdahale edilmesi gerekenler
+- **Kritik Bulgular (15-20 madde):** En önemli sorunlar ve fırsatlar (tekrarsız)
+- **Operasyonel Etki Analizi:** Sadece verideki duruş/üretim/kalite etkileri
+- **Acil Eylem Gerektiren Durumlar (9-12 madde):** Hemen müdahale edilmesi gerekenler
 - **Genel Durum Değerlendirmesi:** A-F notu ve gerekçesi
 - **Yönetim Önerileri:** Stratejik seviyede kararlar
 
 ---
 
 ## 📊 2. DETAYLI PERFORMANS KARNESİ (ADVANCED KPI DASHBOARD)
-- **Genel Verimlilik Analizi:** OEE, kullanılabilirlik, performans, kalite oranları
-- **Ekipman Performans Matrisi:** En sorunlu ekipmanların detaylı analizi
-- **MTBF/MTTR Analizi:** Arızalar arası süre ve tamir süreleri (saatlik detay)
-- **Pareto Analizi:** 80/20 kuralına göre sorun dağılımı
-- **Vardiya Karşılaştırması:** Gece/gündüz performans farkları
-- **Benchmark Karşılaştırma:** Sektör standartları ile kıyaslama
-- **Trend Katsayıları:** İyileşme/kötüleşme oranları
+- **Genel Verimlilik Analizi:** OEE, kullanılabilirlik, performans, kalite oranları (N=toplam kayıt)
+- **Ekipman Performans Matrisi:** En sorunlu 10 ekipman (adet ve %), normalize edilmiş toplam
+- **MTBF/MTTR Analizi:** Arızalar arası süre ve tamir süreleri (saat/dk), medyan + IQR
+- **Pareto Analizi:** 80/20 dağılımı; ana 10 nedenin kümülatif %’si (Toplam %100)
+- **Vardiya Karşılaştırması:** Gece/gündüz/hafta içi/hafta sonu ayrımı; oranlar ve farklar
+- **Benchmark Karşılaştırma:** Genel sektör aralıkları ile nitel kıyaslama (sayısal uydurma yok)
+- **Trend Katsayıları:** İyileşme/kötüleşme oranları (son 7/14/30 gün karşılaştırması)
 
 ---
 
 ## 🔍 3. KÖK NEDEN ANALİZİ (COMPREHENSIVE ROOT CAUSE ANALYSIS)
-- **Sorun Kategorileri (6-8 kategori):** Detaylı % dağılım ve alt nedenler
+- **Sorun Kategorileri (18-24 kategori):** Detaylı % dağılım ve alt nedenler (tekrarsız, normalize Toplam=%100)
 - **Tekrarlayan Arıza Analizi:** Sıklık, pattern ve kök nedenler
 - **Sistem Arızaları:** Mekanik, elektriksel, yazılımsal sorunlar
 - **İnsan Faktörü:** Operatör hataları, eğitim eksikleri
 - **Çevresel Faktörler:** Sıcaklık, nem, titreşim etkileri
 - **Bakım Eksikleri:** Planlı/plansız bakım analizi
-- **Gizli Bulgular:** Veri madenciliği ile bulunan ilişkiler
+- **Gizli Bulgular (12-18 madde):** Veri madenciliği ile bulunan ilişkiler (veriyle doğrulanmış)
 
 ---
 
@@ -163,26 +170,40 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 
 ---
 
-## 💡 6. KAPSAMLI SMART+ EYLEM PLANI (EN AZ 8-10 ÖNERİ)
+## 💡 6. KAPSAMLI SMART+ EYLEM PLANI (EN AZ 20-25 ÖNERİ)
 **ZORUNLU: Her kategoriden en az 2 öneri olmalı**
 
-### 🚨 ACİL EYLEMLER (0-7 gün):
+### 🚨 ACİL EYLEMLER (0-7 gün) (3-4 öneri):
 1. **[Öneri 1]:** Spesifik aksiyon + kaynak + sorumlu
 2. **[Öneri 2]:** Spesifik aksiyon + kaynak + sorumlu
+3. **[Öneri 3]:** Spesifik aksiyon + kaynak + sorumlu
+4. **[Öneri 4]:** Spesifik aksiyon + kaynak + sorumlu
 
-### ⚡ KISA VADELİ (1-30 gün):
-3. **[Öneri 3]:** Detaylı plan + kaynak ihtiyacı + hedef
-4. **[Öneri 4]:** Detaylı plan + kaynak ihtiyacı + hedef
+### ⚡ KISA VADELİ (1-30 gün) (8-10 öneri):
 5. **[Öneri 5]:** Detaylı plan + kaynak ihtiyacı + hedef
+6. **[Öneri 6]:** Detaylı plan + kaynak ihtiyacı + hedef
+7. **[Öneri 7]:** Detaylı plan + kaynak ihtiyacı + hedef
+8. **[Öneri 8]:** Detaylı plan + kaynak ihtiyacı + hedef
+9. **[Öneri 9]:** Detaylı plan + kaynak ihtiyacı + hedef
+10. **[Öneri 10]:** Detaylı plan + kaynak ihtiyacı + hedef
+11. **[Öneri 11]:** Detaylı plan + kaynak ihtiyacı + hedef
+12. **[Öneri 12]:** Detaylı plan + kaynak ihtiyacı + hedef
 
-### 📈 ORTA VADELİ (1-3 ay):
-6. **[Öneri 6]:** Uygulama adımları + operasyonel etki + timeline
-7. **[Öneri 7]:** Uygulama adımları + operasyonel etki + timeline
-8. **[Öneri 8]:** Uygulama adımları + operasyonel etki + timeline
+### 📈 ORTA VADELİ (1-3 ay) (8-10 öneri):
+13. **[Öneri 13]:** Uygulama adımları + operasyonel etki + timeline
+14. **[Öneri 14]:** Uygulama adımları + operasyonel etki + timeline
+15. **[Öneri 15]:** Uygulama adımları + operasyonel etki + timeline
+16. **[Öneri 16]:** Uygulama adımları + operasyonel etki + timeline
+17. **[Öneri 17]:** Uygulama adımları + operasyonel etki + timeline
+18. **[Öneri 18]:** Uygulama adımları + operasyonel etki + timeline
+19. **[Öneri 19]:** Uygulama adımları + operasyonel etki + timeline
+20. **[Öneri 20]:** Uygulama adımları + operasyonel etki + timeline
 
-### 🎯 UZUN VADELİ (3+ ay):
-9. **[Öneri 9]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
-10. **[Öneri 10]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
+### 🎯 UZUN VADELİ (3+ ay) (4-6 öneri):
+21. **[Öneri 21]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
+22. **[Öneri 22]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
+23. **[Öneri 23]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
+24. **[Öneri 24]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
 
 **Her öneri için mutlaka belirt:**
 - Öncelik seviyesi (1-10)

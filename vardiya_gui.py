@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 import pandas as pd
 import os
+import shutil
 from datetime import datetime, timedelta
 import threading
 from excel_analyzer import ExcelAnalyzer, KVKKDataCleaner
@@ -29,6 +30,9 @@ class VardiyaGUI:
         y = (self.window.winfo_screenheight() // 2) - (height // 2)
         self.window.geometry(f"{width}x{height}+{x}+{y}")
         self.window.configure(bg='#f0f0f0')
+        
+        # Çıktı klasörlerini hazırla ve çalışma alanını arşivle
+        self._setup_artifacts()
         
         # Analyzer'ı başlat
         self.analyzer = ExcelAnalyzer()
@@ -253,6 +257,8 @@ class VardiyaGUI:
                   command=self.export_pdf).pack(side='left', padx=5)
         ttk.Button(export_frame, text="📊 Excel Rapor Oluştur", 
                   command=self.export_excel).pack(side='left', padx=5)
+        ttk.Button(export_frame, text="🗂️ Çıktıları Arşivle", 
+                  command=self._auto_archive_outputs).pack(side='right', padx=5)
         ttk.Button(export_frame, text="📝 Word Rapor Oluştur", 
                   command=self.export_word).pack(side='left', padx=5)
         
@@ -479,9 +485,8 @@ class VardiyaGUI:
             # Eğer hiçbiri seçilmemişse, tümünü ekle
             if not selected_analyses:
                 selected_analyses = list(option_mapping.values())
-                # Ek bölümler de ekle
+                # Ek bölüm
                 selected_analyses.extend([
-                    '💰 Maliyet Etkisi Tahmini',
                     '📌 Yönetici Aksiyon Panosu'
                 ])
             
@@ -551,10 +556,13 @@ class VardiyaGUI:
             
             print(f"🔍 PDF Export: AI rapor uzunluğu = {len(ai_report)} karakter")
             
+            default_name = f"AI_Analiz_Raporu_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
             file_path = filedialog.asksaveasfilename(
                 title="PDF Rapor Kaydet",
                 defaultextension=".pdf",
-                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
+                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+                initialdir=self.artifacts_pdf_dir,
+                initialfile=default_name
             )
             
             if file_path:
@@ -577,7 +585,7 @@ class VardiyaGUI:
                 story.append(date_para)
                 story.append(Spacer(1, 0.5*cm))
                 
-                # AI rapor içeriği - Problemsiz ASCII formatla
+                # AI rapor içeriği - Problemsiz ASCII formatla ve tablo/özet bloklarıyla
                 for line in ai_report.split('\n'):
                     if line.strip():
                         # Tüm özel karakterleri temizle ve ASCII'ye çevir
@@ -604,7 +612,7 @@ class VardiyaGUI:
                                     'GENEL OZET', 'SORUN ANALIZI', 'COZUM ONERILERI', 
                                     'TREND ANALIZI', 'PERFORMANS METRIKLERI', 
                                     'YONETICI OZETI', 'KOK NEDEN', 'EYLEM PLANI', 
-                                    'MALIYET ETKISI', 'AKSIYON PANOSU'
+                                    'OPERASYONEL ETKI', 'KAYNAK IHTIYACI', 'AKSIYON PANOSU'
                                 ])):
                                 header_style = styles['Heading2']
                                 header_style.textColor = HexColor('#4472C4')
@@ -614,6 +622,10 @@ class VardiyaGUI:
                             
                             story.append(para)
                             story.append(Spacer(1, 0.2*cm))
+
+                # Bölüm sonu özet kutusu (görsel kalite)
+                story.append(Spacer(1, 0.4*cm))
+                story.append(Paragraph('— Rapor Sonu —', styles['Italic']))
                 
                 doc.build(story)
                 messagebox.showinfo("Başarılı", f"PDF rapor kaydedildi:\n{file_path}")
@@ -635,10 +647,13 @@ class VardiyaGUI:
         
         print(f"🔍 Excel Export: AI rapor uzunluğu = {len(ai_report)} karakter")
         
+        default_name = f"AI_Analiz_Raporu_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
         file_path = filedialog.asksaveasfilename(
             title="Excel Rapor Kaydet",
             defaultextension=".xlsx",
-            filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")]
+            filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
+            initialdir=self.artifacts_excel_dir,
+            initialfile=default_name
         )
         
         if file_path:
@@ -646,6 +661,7 @@ class VardiyaGUI:
                 import pandas as pd
                 from openpyxl import Workbook
                 from openpyxl.styles import Font, Alignment, PatternFill
+                import re
                 
                 # Yeni workbook oluştur
                 wb = Workbook()
@@ -659,11 +675,11 @@ class VardiyaGUI:
                 header_fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
                 
                 # Ana başlık
-                ws['A1'] = '🤖 AI Vardiya Analiz Raporu'
+                ws['A1'] = 'AI Vardiya Analiz Raporu'
                 ws['A1'].font = title_font
                 ws['A1'].fill = title_fill
                 ws['A1'].alignment = Alignment(horizontal='center')
-                ws.merge_cells('A1:D1')
+                ws.merge_cells('A1:E1')
                 
                 # Tarih
                 ws['A3'] = 'Rapor Tarihi:'
@@ -673,9 +689,15 @@ class VardiyaGUI:
                 current_row = 5
                 current_section = ""
                 
+                sep_line_pattern = re.compile(r'^[=\-\s]{3,}$')
+                bullet_prefix_pattern = re.compile(r'^[\s\t]*[\-•·▪►⦿]+\s*')
+
                 for line in ai_report.split('\n'):
                     line_stripped = line.strip()
                     if not line_stripped:
+                        continue
+                    # Sadece ayraç satırları ise atla (====, ---- vb.)
+                    if sep_line_pattern.match(line_stripped):
                         continue
                         
                     # Başlık tespiti
@@ -683,7 +705,7 @@ class VardiyaGUI:
                                 any(keyword in line_stripped.upper() for keyword in [
                                     'GENEL ÖZET', 'SORUN ANALİZİ', 'ÇÖZÜM ÖNERİLERİ', 
                                     'TREND ANALİZİ', 'PERFORMANS METRİKLERİ', 'YÖNETİCİ ÖZETİ',
-                                    'KÖK NEDEN', 'EYLEM PLANI', 'MALİYET ETKİSİ', 'AKSİYON PANOSU'
+                                    'KÖK NEDEN', 'EYLEM PLANI', 'OPERASYONEL ETKİ', 'KAYNAK İHTİYACI', 'AKSİYON PANOSU'
                                 ]))
                     
                     if is_header:
@@ -701,8 +723,12 @@ class VardiyaGUI:
                         current_row += 1
                         current_section = clean_header
                     else:
-                        # İçerik ekle
-                        clean_content = line_stripped.replace('*', '').replace('-', '').strip()
+                        # İçerik ekle: baştaki bullet işaretlerini temizle, metni koru
+                        clean_content = bullet_prefix_pattern.sub('', line_stripped)
+                        clean_content = clean_content.replace('*', '').strip()
+                        # Excel'de formül gibi algılanan satırlar için başına ' ekle
+                        if clean_content.startswith('='):
+                            clean_content = "'" + clean_content
                         if clean_content:
                             # Uzun metinleri böl
                             if len(clean_content) > 80:
@@ -849,6 +875,55 @@ class VardiyaGUI:
     def run(self):
         """Uygulamayı çalıştır"""
         self.window.mainloop()
+
+    # ---------------------- Yardımcılar: Çıktı arşivleme ----------------------
+    def _setup_artifacts(self):
+        """Çıktı klasörlerini hazırlar ve kök dizindeki PDF/Excel dosyalarını arşivler."""
+        base = os.getcwd()
+        self.artifacts_dir = os.path.join(base, 'artifacts')
+        self.artifacts_pdf_dir = os.path.join(self.artifacts_dir, 'pdf')
+        self.artifacts_excel_dir = os.path.join(self.artifacts_dir, 'excel')
+        try:
+            os.makedirs(self.artifacts_pdf_dir, exist_ok=True)
+            os.makedirs(self.artifacts_excel_dir, exist_ok=True)
+        except Exception:
+            pass
+        # İlk açılışta bir defa arşivle
+        self._auto_archive_outputs()
+
+    def _auto_archive_outputs(self):
+        """Kök dizindeki PDF/XLS/XLSX dosyalarını artifacts altına taşır (ad çakışmalarını önler)."""
+        try:
+            root = os.getcwd()
+            for name in os.listdir(root):
+                full = os.path.join(root, name)
+                if not os.path.isfile(full):
+                    continue
+                lower = name.lower()
+                if lower.endswith('.pdf'):
+                    dest_dir = self.artifacts_pdf_dir
+                elif lower.endswith('.xlsx') or lower.endswith('.xls'):
+                    dest_dir = self.artifacts_excel_dir
+                else:
+                    continue
+                # artifacts içindekileri atla
+                try:
+                    if os.path.commonpath([os.path.abspath(full), os.path.abspath(self.artifacts_dir)]) == os.path.abspath(self.artifacts_dir):
+                        continue
+                except Exception:
+                    pass
+                # hedef adı hazırla
+                dst = os.path.join(dest_dir, name)
+                if os.path.exists(dst):
+                    base, ext = os.path.splitext(name)
+                    dst = os.path.join(dest_dir, f"{base}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{ext}")
+                try:
+                    shutil.move(full, dst)
+                except Exception:
+                    # taşınamayanı sessizce geç
+                    pass
+        except Exception:
+            pass
 
 def main():
     """Ana fonksiyon"""

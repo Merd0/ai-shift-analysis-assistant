@@ -5,16 +5,16 @@ Akıllı Üretim Günlüğü Asistanı - Versiyon Bilgileri
 """
 
 # Semantic Versioning: MAJOR.MINOR.PATCH
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 VERSION_NAME = "Güvenli İş Zekası Sistemi"
-BUILD_DATE = "2025-01-08"
-BUILD_NUMBER = 140
+BUILD_DATE = "2025-08-08"
+BUILD_NUMBER = 141
 
 # Versiyon detayları
 VERSION_INFO = {
     'major': 1,
     'minor': 4, 
-    'patch': 0,
+    'patch': 1,
     'pre_release': None,  # alpha, beta, rc
     'build': BUILD_NUMBER
 }
@@ -42,6 +42,19 @@ FEATURES = {
 
 # Değişiklik özeti
 CHANGELOG_SUMMARY = {
+    '1.4.1': {
+        'date': '2025-08-08',
+        'type': 'bugfix',
+        'title': 'Excel Export & Analiz Tutarlılık Düzeltmeleri',
+        'highlights': [
+            'Excel export metin bozulması düzeltildi (ayraç/bullet temizliği, wrap)',
+            'Excel’de "=" başlı satırlar formül olarak algılanmıyor (tek tırnak kaçışı)',
+            'Dağılım yüzdeleri normalize edilip %100’e tamamlanıyor',
+            'Süre/dağılım parse işlemleri daha dayanıklı',
+            'API timeout/retry/offline fallback geri alındı (gerçek neden shell here-doc idi)',
+            'Artifacts dizinlerine otomatik arşivleme'
+        ]
+    },
     '1.4.0': {
         'date': '2025-01-08',
         'type': 'security',

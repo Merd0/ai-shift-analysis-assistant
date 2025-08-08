@@ -5,7 +5,7 @@ AI Destekli Vardiya Devir Analiz Asistanı
 Çimento Fabrikası Vardiya Defteri Analizi için Optimize Edilmiş AI Sistemi
 """
 
-import openai
+from openai import OpenAI
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
@@ -24,7 +24,8 @@ class CimentoVardiyaAI:
         if not api_key:
             raise ValueError("⚠️ API Key gerekli! Lütfen GUI'de API key'inizi girin.")
         
-        openai.api_key = api_key
+        # OpenAI istemcisi (modern SDK)
+        self.client = OpenAI(api_key=api_key)
         self.model = MODEL_NAME
         self.max_tokens = MAX_TOKENS
         self.temperature = TEMPERATURE
@@ -105,47 +106,149 @@ class CimentoVardiyaAI:
         return analysis
 
     def _summarize_data(self, data: pd.DataFrame) -> str:
-        """Veriyi özetleyerek token kullanımını optimize et"""
-        
-        summary_parts = []
-        
-        # Temel istatistikler
-        summary_parts.append(f"📊 GENEL BİLGİ:")
-        summary_parts.append(f"- Toplam kayıt: {len(data)} adet")
-        summary_parts.append(f"- Tarih aralığı: {data['Tarih'].min()} - {data['Tarih'].max()}")
-        
-        # Açıklama verilerini özetle (en uzun kolonlar genelde açıklama)
-        description_columns = [col for col in data.columns if 
-                             any(keyword in col.lower() for keyword in 
-                                ['açıklama', 'iletil', 'takip', 'kalite', 'arıza', 'bakım'])]
-        
+        """Veriyi zengin şekilde özetleyip AI'a güçlü bağlam sağla (KPI + trend + top listeler).
+
+        Ayrıca bazı dağılımları önceden hesaplayıp yüzde toplamını %100'e normalize eder.
+        """
+
+        lines: List[str] = []
+
+        # Tarih bilgisi (varsa)
+        date_col_candidates = [c for c in data.columns if any(k in c.lower() for k in ['tarih', 'date'])]
+        date_range_text = "N/A"
+        if date_col_candidates:
+            dc = date_col_candidates[0]
+            try:
+                dates = pd.to_datetime(data[dc], errors='coerce')
+                min_d = dates.min()
+                max_d = dates.max()
+                if pd.notna(min_d) and pd.notna(max_d):
+                    date_range_text = f"{min_d.date()} - {max_d.date()}"
+            except Exception:
+                pass
+
+        # Genel
+        lines.append("📊 GENEL BİLGİ:")
+        lines.append(f"- Toplam kayıt: {len(data)}")
+        lines.append(f"- Tarih aralığı: {date_range_text}")
+
+        # Vardiya dağılımı (normalize + örnekleme hatalarına dayanıklı)
+        shift_col = next((c for c in data.columns if 'vardiya' in c.lower()), None)
+        if shift_col is not None:
+            try:
+                vc = data[shift_col].astype(str).str.strip().replace({'': None}).dropna().value_counts()
+                dist = vc.head(10)
+                lines.append("\n🕒 VARDİYA DAĞILIMI (ilk 10):")
+                for k, v in dist.items():
+                    lines.append(f"- {k}: {int(v)}")
+            except Exception:
+                pass
+
+        # Normalize edici yardımcı
+        def _normalized_percentages(vc: pd.Series, top_n: int = 10) -> List[Tuple[str, int, int]]:
+            """value_counts serisini ilk top_n için (ad, adet, %) ve bir 'Diğer' ile %100'e
+            tamamlayarak döndürür. Yüzdeler tamsayıya yuvarlanır ve son kaleme fark eklenir.
+            """
+            items = vc.head(top_n)
+            total = int(vc.sum()) if vc.sum() else 0
+            result: List[Tuple[str, int, int]] = []
+            if total == 0:
+                return result
+            percents = []
+            names = list(items.index.astype(str))
+            counts = list(items.astype(int).values)
+            for c in counts:
+                percents.append(int(round(c * 100.0 / total)))
+            diff = 100 - sum(percents)
+            if percents:
+                percents[-1] += diff
+            for n, c, p in zip(names, counts, percents):
+                result.append((n, int(c), int(p)))
+            # Diğer
+            others = total - sum(counts)
+            if others > 0:
+                p_other = max(0, 100 - sum([p for _, _, p in result]))
+                result.append(("Diğer", int(others), int(p_other)))
+            return result
+
+        # Ekipman dağılımı
+        equipment_col = next((c for c in data.columns if any(k in c.lower() for k in ['ekipman', 'makine', 'ünite', 'unite', 'unit'])), None)
+        if equipment_col is not None:
+            try:
+                vc = data[equipment_col].astype(str).str.strip().replace({'': None}).dropna().value_counts()
+                lines.append("\n🏭 EKİPMAN DAĞILIMI (ilk 10, normalize):")
+                dist = _normalized_percentages(vc, top_n=10)
+                for name, cnt, pct in dist:
+                    lines.append(f"- {name}: {cnt} kayıt (%{pct})")
+                if vc.sum() > 0:
+                    lines.append("Toplam = %100")
+            except Exception:
+                pass
+
+        # Sorun / Kategori dağılımı
+        issue_col = next((c for c in data.columns if any(k in c.lower() for k in ['sorun', 'arıza', 'ariza', 'problem', 'kategori'])), None)
+        if issue_col is not None:
+            try:
+                vc = data[issue_col].astype(str).str.strip().replace({'': None}).dropna().str.lower().value_counts()
+                lines.append("\n⚠️ SORUN KATEGORİLERİ (ilk 10, normalize):")
+                dist = _normalized_percentages(vc, top_n=10)
+                for name, cnt, pct in dist:
+                    lines.append(f"- {name}: {cnt} kayıt (%{pct})")
+                if vc.sum() > 0:
+                    lines.append("Toplam = %100")
+            except Exception:
+                pass
+
+        # Duruş/Süre (dakika)
+        duration_col = next((c for c in data.columns if any(k in c.lower() for k in ['süre', 'sure', 'dakika', 'dk'])), None)
+        if duration_col is not None:
+            try:
+                # Metin içindeki sayıları da yakalamaya çalış (ör. "45 dk", "~30")
+                cleaned = (
+                    data[duration_col]
+                    .astype(str)
+                    .str.extract(r'(\d+[\.,]?\d*)', expand=False)
+                )
+                durations = pd.to_numeric(cleaned.str.replace(',', '.', regex=False), errors='coerce')
+                total_min = durations.fillna(0).sum()
+                avg_min = durations.dropna().mean() if durations.notna().any() else 0
+                lines.append("\n⏱️ Duruş Süresi (dakika):")
+                lines.append(f"- Toplam: {int(total_min)} dk")
+                lines.append(f"- Ortalama: {avg_min:.1f} dk/kayıt")
+            except Exception:
+                pass
+
+        # Trend özeti (son 7 gün vs önceki 7 gün)
+        if date_col_candidates:
+            dc = date_col_candidates[0]
+            try:
+                df_copy = data.copy()
+                df_copy[dc] = pd.to_datetime(df_copy[dc], errors='coerce')
+                daily_counts = df_copy.groupby(df_copy[dc].dt.date).size().sort_index()
+                if len(daily_counts) >= 14:
+                    last7 = daily_counts[-7:].sum()
+                    prev7 = daily_counts[-14:-7].sum()
+                    delta = last7 - prev7
+                    trend = "↑" if delta > 0 else ("↓" if delta < 0 else "=")
+                    lines.append("\n📈 Trend (kayıt adedi):")
+                    lines.append(f"- Son 7 gün: {int(last7)} | Önceki 7: {int(prev7)} | Fark: {int(delta)} {trend}")
+            except Exception:
+                pass
+
+        # Açıklamalardan kısa örnekler
+        description_columns = [col for col in data.columns if any(keyword in col.lower() for keyword in ['açıklama', 'aciklama', 'iletil', 'takip', 'kalite', 'arıza', 'ariza', 'bakım', 'bakim', 'not', 'yorum'])]
         if description_columns:
-            summary_parts.append(f"\n🔍 ÖNEMLİ KAYITLAR:")
-            
-            # Her kolondaki önemli kayıtları özetle
-            for col in description_columns[:3]:  # Sadece ilk 3 kolonu al (token tasarrufu)
-                non_empty = data[col].dropna()
+            lines.append("\n🔍 ÖRNEK KAYITLAR (max 3 kolon x 3 örnek):")
+            for col in description_columns[:3]:
+                non_empty = data[col].dropna().astype(str)
                 if len(non_empty) > 0:
-                    # En uzun ve en kısa kayıtları örnek olarak al
-                    samples = non_empty.head(5).tolist()  # Sadece 5 örnek
-                    summary_parts.append(f"\n{col}:")
+                    samples = non_empty.head(3).tolist()
+                    lines.append(f"- {col}:")
                     for i, sample in enumerate(samples, 1):
-                        # Çok uzun metinleri kısalt
-                        sample_text = str(sample)[:200] + "..." if len(str(sample)) > 200 else str(sample)
-                        summary_parts.append(f"  {i}. {sample_text}")
-        
-        # CSO verilerini özetle (varsa)
-        cso_columns = [col for col in data.columns if 'cso' in col.lower()]
-        if cso_columns:
-            summary_parts.append(f"\n📈 KALİTE PARAMETRELERİ (CSO):")
-            for col in cso_columns[:5]:  # Sadece 5 CSO parametresi
-                if data[col].dtype in ['int64', 'float64']:
-                    avg_val = data[col].mean()
-                    min_val = data[col].min()
-                    max_val = data[col].max()
-                    summary_parts.append(f"  {col}: Ort={avg_val:.1f}, Min={min_val:.1f}, Max={max_val:.1f}")
-        
-        return "\n".join(summary_parts)
+                        sample_text = sample[:200] + "..." if len(sample) > 200 else sample
+                        lines.append(f"  {i}. {sample_text}")
+
+        return "\n".join(lines)
 
     def _create_analysis_prompt(self, summary_data: str, date_range: str, analysis_options: List[str] = None, user_question: str = "") -> str:
         """Yeni gelişmiş prompt sistemi ile analiz prompt'u oluştur"""
@@ -160,7 +263,6 @@ class CimentoVardiyaAI:
                 "📊 Performans Karnesi", 
                 "🔍 Kök Neden Analizi",
                 "📈 Zaman Trendleri ve Risk Tahmini",
-                "💰 Maliyet Etkisi Tahmini",
                 "💡 SMART Eylem Planı",
                 "📌 Yönetici Aksiyon Panosu"
             ]
@@ -184,8 +286,7 @@ class CimentoVardiyaAI:
         """OpenAI API çağrısı - optimize edilmiş"""
         
         try:
-            client = openai.OpenAI(api_key=openai.api_key)
-            response = client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {
@@ -202,8 +303,8 @@ class CimentoVardiyaAI:
             
             analysis_text = response.choices[0].message.content
             
-            # Yanıtı yapılandırılmış formata çevir (şimdilik basit format)
-            structured_analysis = analysis_text
+            # Yanıtı yapılandırılmış formata çevir
+            structured_analysis = self._parse_analysis_response(analysis_text)
             
             # Token kullanımını logla
             token_usage = {
@@ -236,13 +337,15 @@ class CimentoVardiyaAI:
             'sorunlar': [],
             'çözümler': [],
             'öneriler': [],
-            'trend_analizi': ''
+            'trend_analizi': '',
+            'yüzde_kontrol': []
         }
         
         # Basit parsing (regex ile bölümleri ayır)
         current_section = None
         lines = response_text.split('\n')
         
+        total_percent_accumulator: List[int] = []
         for line in lines:
             line = line.strip()
             if not line:
@@ -273,6 +376,19 @@ class CimentoVardiyaAI:
                 else:
                     sections[current_section] += line + '\n'
         
+            # Basit yüzde tutarlılık yakalama (örn: "%15")
+            try:
+                import re as _re
+                matches = _re.findall(r"%(\d{1,3})", line.replace('％','%'))
+                if matches:
+                    total_percent_accumulator.extend([int(m) for m in matches])
+            except Exception:
+                pass
+        
+        # Normalize/tutarlılık notu
+        if total_percent_accumulator:
+            total = sum([p for p in total_percent_accumulator if 0 <= p <= 100])
+            sections['yüzde_kontrol'].append(f"Yüzde toplamı (ham): %{total}")
         return sections
 
     def generate_manager_report(self, analysis: Dict, period: str = "günlük") -> str:
