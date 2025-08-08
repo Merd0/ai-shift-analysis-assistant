@@ -1,13 +1,22 @@
-# 🤖 Akıllı Üretim Günlüğü Asistanı
+# Akıllı Üretim Günlüğü Asistanı
 
-**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.1.0 - Güvenlik Güncellemesi**
+**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.4.1 - Güvenli İş Zekası Sistemi**
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](CHANGELOG.md)
 [![Security](https://img.shields.io/badge/security-enhanced-green.svg)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](requirements.txt)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Bu sistem, SoftExpert'ten alınan vardiya defteri kayıtlarını analiz edip günün özeti, sorunlar ve çözümleri gibi ana noktaları listeler. Kişisel verileri otomatik olarak temizleyerek KVKK uyumluluğu sağlar.
+
+## v1.4.1 – Öne Çıkanlar
+
+- Excel export metin/format düzeltmeleri (ayraç/bullet temizliği, wrap)
+- Excel’de "=" ile başlayan satırlar formül algılanmıyor (tek tırnak kaçışı)
+- Dağılım yüzdeleri normalize edilerek Toplam = %100
+- Süre/dağılım parse işlemleri daha dayanıklı
+- API timeout/retry/offline fallback kaldırıldı
+- `artifacts/` klasörlerine otomatik arşivleme
 
 ## 🔒 **v1.1.0 Güvenlik Güncellemesi**
 
@@ -117,9 +126,7 @@ akilli_uretim_gunlugu_asistani/
 2. API key alın
 3. GUI'de API key'i girin
 
-**Maliyet Tahmini:**
-- GPT-4o-mini: Günlük 10 analiz ≈ $0.50
-- Aylık maliyet: ≈ $15
+<!-- Finansal tahmin içerikleri kaldırıldı -->
 
 ### Tarih Filtreleme
 - **Hazır seçenekler**: 1, 7, 30, 60, 90, 180 gün

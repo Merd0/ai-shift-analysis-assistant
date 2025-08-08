@@ -5,13 +5,15 @@ Bu dosya projenin tüm önemli değişikliklerini takip eder.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardına uygun
 Versiyonlama: [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH)
 
-## [Yayınlanmamış] - Geliştirme Aşamasında
+## [1.4.1] - 2025-08-08 - Excel Export & Analiz Tutarlılık Düzeltmeleri
 
-### Planlanan
-- Web tabanlı arayüz
-- Grafik ve dashboard
-- Oracle veritabanı entegrasyonu
-- Email raporlama
+### Bugfix / İyileştirme
+- Excel export metni: ayraç/bullet temizleme, başlık birleştirme, wrap ve satır yüksekliği
+- "=" ile başlayan satırlar formül olmaktan çıkarıldı (tek tırnak)
+- Yüzde dağılımları kod tarafında normalize edilerek Toplam = %100
+- Süre ve dağılım parsleme daha dayanıklı
+- API timeout/retry/offline fallback kaldırıldı (shell here-doc sebebi)
+- Artifacts klasör yapısı ve otomatik arşivleme
 
 ---
 
