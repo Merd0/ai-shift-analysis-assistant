@@ -171,23 +171,43 @@ class VardiyaGUI:
         self.notebook.add(frame, text="🤖 AI Analizi")
         
         # API ayarları
-        api_frame = ttk.LabelFrame(frame, text="🔑 OpenAI API Ayarları", padding=10)
+        api_frame = ttk.LabelFrame(frame, text="🔑 LLM API Ayarları", padding=10)
         api_frame.pack(fill='x', padx=10, pady=5)
         
-        ttk.Label(api_frame, text="API Key:").grid(row=0, column=0, sticky='w')
+        ttk.Label(api_frame, text="Sağlayıcı:").grid(row=0, column=0, sticky='w')
+        self.provider_var = tk.StringVar(value='openai')
+        provider_combo = ttk.Combobox(api_frame, textvariable=self.provider_var, state='readonly',
+                                      values=['openai', 'anthropic', 'xai'])
+        provider_combo.grid(row=0, column=1, padx=5, sticky='w')
+
+        ttk.Label(api_frame, text="API Key:").grid(row=1, column=0, sticky='w')
         self.api_key_entry = ttk.Entry(api_frame, width=50, show='*')
-        self.api_key_entry.grid(row=0, column=1, padx=5, sticky='ew')
+        self.api_key_entry.grid(row=1, column=1, padx=5, sticky='ew')
         
         # API Key yardım mesajı
-        help_label = ttk.Label(api_frame, text="💡 OpenAI hesabınızdan API key alın: https://platform.openai.com/api-keys", 
+        help_label = ttk.Label(api_frame, text="💡 Sağlayıcıya göre API key sayfası: OpenAI / Anthropic / xAI", 
                               style='Info.TLabel', foreground='blue')
-        help_label.grid(row=2, column=0, columnspan=2, sticky='w', pady=(5,0))
+        help_label.grid(row=3, column=0, columnspan=2, sticky='w', pady=(5,0))
         
-        ttk.Label(api_frame, text="Model:").grid(row=1, column=0, sticky='w')
+        ttk.Label(api_frame, text="Model:").grid(row=2, column=0, sticky='w')
         self.model_var = tk.StringVar(value="gpt-4o-mini")
-        model_combo = ttk.Combobox(api_frame, textvariable=self.model_var, 
-                                  values=["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"])
-        model_combo.grid(row=1, column=1, padx=5, sticky='w')
+        model_combo = ttk.Combobox(api_frame, textvariable=self.model_var)
+        model_combo.grid(row=2, column=1, padx=5, sticky='w')
+
+        # Sağlayıcıya göre model listesi
+        def refresh_models(*args):
+            provider = self.provider_var.get()
+            try:
+                from config import PROVIDERS
+                models = PROVIDERS.get(provider, {}).get('models', [])
+                model_combo['values'] = models if models else [self.model_var.get()]
+                if models:
+                    self.model_var.set(models[0])
+            except Exception:
+                pass
+
+        self.provider_var.trace_add('write', lambda *_: refresh_models())
+        refresh_models()
         
         api_frame.columnconfigure(1, weight=1)
         
@@ -463,7 +483,11 @@ class VardiyaGUI:
             from ai_analyzer import CimentoVardiyaAI
             
             # AI sistemi oluştur
-            ai_system = CimentoVardiyaAI(api_key=api_key)
+            ai_system = CimentoVardiyaAI(
+                api_key=api_key,
+                provider=self.provider_var.get(),
+                model=self.model_var.get()
+            )
             
             # Analiz edilecek veriyi hazırla
             data_to_analyze = getattr(self, 'filtered_data', self.current_data)

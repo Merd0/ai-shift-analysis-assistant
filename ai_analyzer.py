@@ -6,6 +6,7 @@ AI Destekli Vardiya Devir Analiz Asistanı
 """
 
 from openai import OpenAI
+import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
@@ -14,7 +15,7 @@ import re
 from config import MODEL_NAME, MAX_TOKENS, TEMPERATURE
 
 class CimentoVardiyaAI:
-    def __init__(self, api_key: str = ""):
+    def __init__(self, api_key: str = "", provider: str = "openai", model: Optional[str] = None, base_url: Optional[str] = None):
         """
         Çimento fabrikası vardiya analizi için AI sistemi
         
@@ -23,10 +24,18 @@ class CimentoVardiyaAI:
         """
         if not api_key:
             raise ValueError("⚠️ API Key gerekli! Lütfen GUI'de API key'inizi girin.")
-        
-        # OpenAI istemcisi (modern SDK)
-        self.client = OpenAI(api_key=api_key)
-        self.model = MODEL_NAME
+
+        # Sağlayıcı seçimi
+        self.provider = provider.lower().strip()
+        self.api_key = api_key
+
+        # OpenAI istemcisi (varsayılan)
+        self.client = None
+        if self.provider == "openai":
+            self.client = OpenAI(api_key=api_key)
+
+        # Model seçimi
+        self.model = model or MODEL_NAME
         self.max_tokens = MAX_TOKENS
         self.temperature = TEMPERATURE
         
@@ -101,7 +110,7 @@ class CimentoVardiyaAI:
         prompt = self._create_analysis_prompt(summary_data, date_range, analysis_options, user_question)
         
         # AI analizi çağır
-        analysis = self._call_openai_api(prompt)
+        analysis = self._call_llm_api(prompt)
         
         return analysis
 
@@ -282,45 +291,79 @@ class CimentoVardiyaAI:
         
         return full_prompt
 
-    def _call_openai_api(self, prompt: str) -> Dict:
-        """OpenAI API çağrısı - optimize edilmiş"""
-        
+    def _call_llm_api(self, prompt: str) -> Dict:
+        """Seçili sağlayıcıya göre API çağrısı"""
+
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {
-                        "role": "user", 
-                        "content": prompt  # Prompt zaten system + user içeriyor
-                    }
-                ],
-                max_tokens=self.max_tokens,
-                temperature=0.8,  # Yaratıcılığı artır
-                top_p=0.95,  # Çeşitliliği artır
-                frequency_penalty=0.6,  # Tekrarları güçlü şekilde azalt
-                presence_penalty=0.6   # Yeni konuları teşvik et
-            )
-            
-            analysis_text = response.choices[0].message.content
-            
-            # Yanıtı yapılandırılmış formata çevir
+            if self.provider == "openai":
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=self.max_tokens,
+                    temperature=0.8,
+                    top_p=0.95,
+                    frequency_penalty=0.6,
+                    presence_penalty=0.6,
+                )
+                analysis_text = response.choices[0].message.content
+                token_usage = {
+                    'prompt_tokens': getattr(response.usage, 'prompt_tokens', None),
+                    'completion_tokens': getattr(response.usage, 'completion_tokens', None),
+                    'total_tokens': getattr(response.usage, 'total_tokens', None),
+                }
+
+            elif self.provider == "anthropic":
+                # Claude Messages API
+                url = "https://api.anthropic.com/v1/messages"
+                headers = {
+                    "x-api-key": self.api_key,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json"
+                }
+                payload = {
+                    "model": self.model,
+                    "max_tokens": self.max_tokens,
+                    "temperature": 0.8,
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+                r = requests.post(url, headers=headers, data=json.dumps(payload), timeout=60)
+                r.raise_for_status()
+                data = r.json()
+                # Claude yanıtı
+                parts = data.get("content", [])
+                analysis_text = "".join([p.get("text", "") for p in parts]) if isinstance(parts, list) else data.get("content", "")
+                token_usage = data.get("usage", {})
+
+            elif self.provider == "xai":
+                # xAI Grok (OpenAI uyumlu style olabilir; burada basit REST örneği)
+                base = "https://api.x.ai/v1"
+                url = f"{base}/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": self.max_tokens,
+                    "temperature": 0.8
+                }
+                r = requests.post(url, headers=headers, data=json.dumps(payload), timeout=60)
+                r.raise_for_status()
+                data = r.json()
+                analysis_text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                token_usage = data.get("usage", {})
+
+            else:
+                raise ValueError(f"Desteklenmeyen sağlayıcı: {self.provider}")
+
             structured_analysis = self._parse_analysis_response(analysis_text)
-            
-            # Token kullanımını logla
-            token_usage = {
-                'prompt_tokens': response.usage.prompt_tokens,
-                'completion_tokens': response.usage.completion_tokens,
-                'total_tokens': response.usage.total_tokens,
-                'estimated_cost': response.usage.total_tokens * 0.00015 / 1000  # GPT-4o-mini fiyatı
-            }
-            
             return {
                 'analysis': structured_analysis,
                 'raw_response': analysis_text,
                 'token_usage': token_usage,
                 'timestamp': datetime.now().isoformat()
             }
-            
         except Exception as e:
             return {
                 'error': f"AI analizi hatası: {str(e)}",

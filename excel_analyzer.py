@@ -288,7 +288,20 @@ class ExcelAnalyzer:
             print(f"\n🔍 Analiz ediliyor: {os.path.basename(file_path)}")
             
             # Excel dosyasını oku
-            df = pd.read_excel(file_path)
+            # Tüm sheet'leri oku, birleştir (önemli veri kaybını önle)
+            try:
+                xls = pd.ExcelFile(file_path)
+                sheets = []
+                for sheet_name in xls.sheet_names:
+                    try:
+                        part = pd.read_excel(xls, sheet_name=sheet_name)
+                        part['__sheet__'] = sheet_name
+                        sheets.append(part)
+                    except Exception:
+                        continue
+                df = pd.concat(sheets, ignore_index=True) if sheets else pd.read_excel(file_path)
+            except Exception:
+                df = pd.read_excel(file_path)
             
             # Temel bilgiler
             basic_info = {

@@ -71,7 +71,7 @@ pip install -r requirements.txt
 
 ### Manuel Kurulum
 ```bash
-pip install pandas openpyxl numpy openai
+pip install pandas openpyxl numpy openai reportlab pydantic typer
 ```
 
 ## 📖 Kullanım
