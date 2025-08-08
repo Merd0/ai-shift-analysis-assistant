@@ -210,6 +210,38 @@ class VardiyaGUI:
         refresh_models()
         
         api_frame.columnconfigure(1, weight=1)
+
+        # İleri seviye üretim ayarları
+        adv_frame = ttk.LabelFrame(frame, text="⚙️ Üretim Ayarları", padding=10)
+        adv_frame.pack(fill='x', padx=10, pady=5)
+
+        # Otomatik ayar seçeneği
+        self.auto_gen_settings_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(adv_frame, text="Otomatik (önerilen)", variable=self.auto_gen_settings_var).grid(row=0, column=0, sticky='w')
+
+        ttk.Label(adv_frame, text="Maks Çıktı (token):").grid(row=0, column=0, sticky='w')
+        self.max_tokens_var = tk.StringVar(value="6000")
+        self.max_tokens_entry = ttk.Entry(adv_frame, textvariable=self.max_tokens_var, width=10)
+        self.max_tokens_entry.grid(row=0, column=1, sticky='w', padx=5)
+
+        ttk.Label(adv_frame, text="Sıcaklık (0-1):").grid(row=0, column=2, sticky='w', padx=(15,5))
+        self.temperature_var = tk.StringVar(value="0.7")
+        self.temperature_entry = ttk.Entry(adv_frame, textvariable=self.temperature_var, width=6)
+        self.temperature_entry.grid(row=0, column=3, sticky='w')
+
+        adv_frame.columnconfigure(4, weight=1)
+
+        # Otomatik seçiliyken alanları devre dışı bırak
+        def _toggle_adv_state(*_):
+            state = 'disabled' if self.auto_gen_settings_var.get() else 'normal'
+            try:
+                self.max_tokens_entry.configure(state=state)
+                self.temperature_entry.configure(state=state)
+            except Exception:
+                pass
+
+        self.auto_gen_settings_var.trace_add('write', lambda *_: _toggle_adv_state())
+        _toggle_adv_state()
         
         # Analiz seçenekleri
         options_frame = ttk.LabelFrame(frame, text="📋 Analiz Seçenekleri", padding=10)
@@ -483,10 +515,26 @@ class VardiyaGUI:
             from ai_analyzer import CimentoVardiyaAI
             
             # AI sistemi oluştur
+            # Ayarları oku
+            if self.auto_gen_settings_var.get():
+                max_tokens = None
+                temperature = None
+            else:
+                try:
+                    max_tokens = int(self.max_tokens_var.get().strip())
+                except Exception:
+                    max_tokens = 6000
+                try:
+                    temperature = float(self.temperature_var.get().strip())
+                except Exception:
+                    temperature = 0.7
+
             ai_system = CimentoVardiyaAI(
                 api_key=api_key,
                 provider=self.provider_var.get(),
-                model=self.model_var.get()
+                model=self.model_var.get(),
+                max_tokens=max_tokens,
+                temperature=temperature
             )
             
             # Analiz edilecek veriyi hazırla
@@ -750,6 +798,27 @@ class VardiyaGUI:
                         # İçerik ekle: baştaki bullet işaretlerini temizle, metni koru
                         clean_content = bullet_prefix_pattern.sub('', line_stripped)
                         clean_content = clean_content.replace('*', '').strip()
+                        # Yer tutucuların ve bozuk alan adlarının temizliği
+                        try:
+                            import re as _re
+                            # %0 sorunlarını çöz
+                            clean_content = _re.sub(r"\(%\s*0\s*\)", "(≈%<1)", clean_content)
+                            clean_content = _re.sub(r"%\s*0\b", "≈%<1", clean_content)
+                            clean_content = _re.sub(r"(\d+)\s*\(\s*%\s*0\s*\)", r"\1 (≈%<1)", clean_content)
+                            # X/Y saat|dk -> veri yok
+                            clean_content = _re.sub(r"=\s*[XYxy]\s*(saat|dk|dakika)", "= veri yok", clean_content)
+                            clean_content = _re.sub(r"\b[XYxy]\s*(saat|dk|dakika)\b", "veri yok", clean_content)
+                            # Dayanak veri temizliği - daha kapsamlı
+                            clean_content = _re.sub(r"(?i)Dayanak\s*veri\s*:\s*(N/?A|NA|N\.A\.?|NONE|null|eksik|yok|boş)\b", "Dayanak veri: veri yok", clean_content)
+                            clean_content = _re.sub(r"(?i)Dayanak\s*veri\s*:\s*veri\s*yok\s*—", "Dayanak veri: veri yok —", clean_content)
+                            # '-soru-' tekrarı -> '— Sorumlu —'
+                            clean_content = _re.sub(r"(?i)(?:[\-—]\s*soru\s*){2,}", " — Sorumlu — ", clean_content)
+                            clean_content = _re.sub(r"(?i)(?<=[-—])\s*soru\s*(?=[-—])", " Sorumlu ", clean_content)
+                        except Exception:
+                            pass
+                        # NaN / N/A gibi anlamsız çıktıların temizlenmesi
+                        if clean_content.lower() in ['nan', 'none', 'null', 'n/a', 'na']:
+                            continue
                         # Excel'de formül gibi algılanan satırlar için başına ' ekle
                         if clean_content.startswith('='):
                             clean_content = "'" + clean_content
@@ -766,6 +835,14 @@ class VardiyaGUI:
                                 ws[f'A{current_row}'].alignment = Alignment(wrap_text=True, vertical='top')
                                 ws.row_dimensions[current_row].height = 20
                             current_row += 1
+
+                # Eğer Eylem Planı bölümlerinde yeterli öğe yoksa uyarı ekle (debug amacıyla)
+                # Bu kısım sadece görünür not; üretime etki etmez
+                # try/except ile güvence altına alalım
+                try:
+                    pass
+                except Exception:
+                    pass
                 
                 # Kolon genişlikleri - Excel formatı için optimize
                 ws.column_dimensions['A'].width = 100

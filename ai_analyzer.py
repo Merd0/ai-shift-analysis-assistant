@@ -15,7 +15,8 @@ import re
 from config import MODEL_NAME, MAX_TOKENS, TEMPERATURE
 
 class CimentoVardiyaAI:
-    def __init__(self, api_key: str = "", provider: str = "openai", model: Optional[str] = None, base_url: Optional[str] = None):
+    def __init__(self, api_key: str = "", provider: str = "openai", model: Optional[str] = None, base_url: Optional[str] = None,
+                 max_tokens: Optional[int] = None, temperature: Optional[float] = None):
         """
         Çimento fabrikası vardiya analizi için AI sistemi
         
@@ -34,13 +35,54 @@ class CimentoVardiyaAI:
         if self.provider == "openai":
             self.client = OpenAI(api_key=api_key)
 
-        # Model seçimi
+        # Model ve jenerasyon ayarları
         self.model = model or MODEL_NAME
-        self.max_tokens = MAX_TOKENS
-        self.temperature = TEMPERATURE
+        self.max_tokens = int(max_tokens if max_tokens is not None else MAX_TOKENS)
+        self.temperature = float(temperature if temperature is not None else TEMPERATURE)
         
         # Çimento fabrikası spesifik context
         self.cement_context = self._load_cement_context()
+
+        # Sağlayıcıya göre tahmini bağlam limitleri (token)
+        self._context_limits = {
+            "openai": 128000,
+            "anthropic": 200000,
+            "xai": 131072
+        }
+
+    def _approx_tokens(self, text: str) -> int:
+        """Basit yaklaşık token hesabı (karakter/4)."""
+        if not text:
+            return 0
+        return max(1, int(len(text) / 4))
+
+    def _auto_adjust_generation_params(self, prompt: str, data_rows: int) -> None:
+        """Satır sayısı ve prompt uzunluğuna göre max_tokens/sıcaklık ayarı yap."""
+        # Bağlam limiti ve güvenli boşluk (%20 buffer)
+        limit = self._context_limits.get(self.provider, 128000)
+        prompt_tokens = self._approx_tokens(prompt)
+        safe_room = int(limit * 0.8) - prompt_tokens
+        safe_room = max(512, safe_room)
+
+        # Satır bazlı hedef (çok uzun raporlar için)
+        if data_rows < 1000:
+            row_target = 4000
+        elif data_rows < 5000:
+            row_target = 8000
+        elif data_rows < 15000:
+            row_target = 12000
+        else:
+            row_target = 16000
+
+        requested = self.max_tokens
+        target = max(requested, row_target)
+        # Üst sınır ve güvenli bağlam kısıtı
+        target = min(target, safe_room, 20000)
+        self.max_tokens = max(512, int(target))
+
+        # Çok büyük veri için sıcaklığı bir miktar aşağı çek (tutarlılık)
+        if data_rows >= 5000:
+            self.temperature = min(self.temperature, 0.6)
         
     def _load_cement_context(self) -> str:
         """Çimento fabrikası için optimize edilmiş context"""
@@ -108,6 +150,13 @@ class CimentoVardiyaAI:
         
         # Yeni gelişmiş AI prompt oluştur
         prompt = self._create_analysis_prompt(summary_data, date_range, analysis_options, user_question)
+
+        # Token/sıcaklık otomatik ayarı
+        try:
+            data_rows = int(len(data)) if data is not None else 0
+        except Exception:
+            data_rows = 0
+        self._auto_adjust_generation_params(prompt, data_rows)
         
         # AI analizi çağır
         analysis = self._call_llm_api(prompt)
@@ -121,6 +170,28 @@ class CimentoVardiyaAI:
         """
 
         lines: List[str] = []
+
+        def _clean_count_series(series: pd.Series) -> pd.Series:
+            """Kategori sayımları için metin serisini temizle.
+            - Boş / NaN / None / Null / N/A / NA / NaT / '-' gibi değerleri çıkar
+            - Aşırı boşlukları normalize et
+            """
+            try:
+                s = series.astype(str).str.strip()
+                # Lower-case kopya ile null benzerlerini tespit et
+                s_lower = s.str.lower()
+                null_like = [
+                    '', 'nan', 'none', 'null', 'nat', 'n/a', 'na', 'n\\a', 'n.a', 'n.a.', '-', '--', '—', 'yok', 'bilinmiyor'
+                ]
+                mask = s_lower.isin(null_like)
+                s = s[~mask]
+                # Tek karakterlik anlamsız değerleri filtrele (örn: '.')
+                s = s[s.str.len() >= 2]
+                # Whitespace normalizasyonu
+                s = s.str.replace(r"\s+", " ", regex=True)
+                return s
+            except Exception:
+                return series.dropna()
 
         # Tarih bilgisi (varsa)
         date_col_candidates = [c for c in data.columns if any(k in c.lower() for k in ['tarih', 'date'])]
@@ -141,11 +212,27 @@ class CimentoVardiyaAI:
         lines.append(f"- Toplam kayıt: {len(data)}")
         lines.append(f"- Tarih aralığı: {date_range_text}")
 
+        # Güncellik dağılımı: son 90/180/365 gün ve 24+ ay önceki kayıt sayıları
+        if date_col_candidates:
+            try:
+                dc = date_col_candidates[0]
+                dates = pd.to_datetime(data[dc], errors='coerce')
+                now = pd.Timestamp.now(tz=None).normalize()
+                last90 = (dates >= now - pd.Timedelta(days=90)).sum()
+                last180 = (dates >= now - pd.Timedelta(days=180)).sum()
+                last365 = (dates >= now - pd.Timedelta(days=365)).sum()
+                older24m = (dates < now - pd.Timedelta(days=730)).sum()
+                lines.append("- Güncellik (kayıt adedi): son 90g=%d | 180g=%d | 365g=%d | 24+ ay=%d" % (int(last90), int(last180), int(last365), int(older24m)))
+                if older24m and last365 == 0:
+                    lines.append("- Not: Kayıtların çoğu 24+ ay öncesi. Eylem planı üretimi sınırlı tutulacaktır.")
+            except Exception:
+                pass
+
         # Vardiya dağılımı (normalize + örnekleme hatalarına dayanıklı)
         shift_col = next((c for c in data.columns if 'vardiya' in c.lower()), None)
         if shift_col is not None:
             try:
-                vc = data[shift_col].astype(str).str.strip().replace({'': None}).dropna().value_counts()
+                vc = _clean_count_series(data[shift_col]).value_counts()
                 dist = vc.head(10)
                 lines.append("\n🕒 VARDİYA DAĞILIMI (ilk 10):")
                 for k, v in dist.items():
@@ -184,7 +271,7 @@ class CimentoVardiyaAI:
         equipment_col = next((c for c in data.columns if any(k in c.lower() for k in ['ekipman', 'makine', 'ünite', 'unite', 'unit'])), None)
         if equipment_col is not None:
             try:
-                vc = data[equipment_col].astype(str).str.strip().replace({'': None}).dropna().value_counts()
+                vc = _clean_count_series(data[equipment_col]).value_counts()
                 lines.append("\n🏭 EKİPMAN DAĞILIMI (ilk 10, normalize):")
                 dist = _normalized_percentages(vc, top_n=10)
                 for name, cnt, pct in dist:
@@ -198,7 +285,7 @@ class CimentoVardiyaAI:
         issue_col = next((c for c in data.columns if any(k in c.lower() for k in ['sorun', 'arıza', 'ariza', 'problem', 'kategori'])), None)
         if issue_col is not None:
             try:
-                vc = data[issue_col].astype(str).str.strip().replace({'': None}).dropna().str.lower().value_counts()
+                vc = _clean_count_series(data[issue_col]).str.lower().value_counts()
                 lines.append("\n⚠️ SORUN KATEGORİLERİ (ilk 10, normalize):")
                 dist = _normalized_percentages(vc, top_n=10)
                 for name, cnt, pct in dist:
@@ -208,7 +295,7 @@ class CimentoVardiyaAI:
             except Exception:
                 pass
 
-        # Duruş/Süre (dakika)
+        # Duruş/Süre (dakika) + MTBF/MTTR hesaplamasına uygunluk
         duration_col = next((c for c in data.columns if any(k in c.lower() for k in ['süre', 'sure', 'dakika', 'dk'])), None)
         if duration_col is not None:
             try:
@@ -224,6 +311,29 @@ class CimentoVardiyaAI:
                 lines.append("\n⏱️ Duruş Süresi (dakika):")
                 lines.append(f"- Toplam: {int(total_min)} dk")
                 lines.append(f"- Ortalama: {avg_min:.1f} dk/kayıt")
+                # MTBF/MTTR için veri uygunluk sinyali (örnek: tarih/başlangıç-bitiş yoksa hesaplama yapılmaz)
+                lines.append("- MTBF/MTTR: veri varsa hesaplanır; eksikse 'veri yok' yaz")
+
+                # Haftalık ortalama duruş süresi (son 7 gün vs önceki 7 gün)
+                if date_col_candidates:
+                    try:
+                        dc = date_col_candidates[0]
+                        dates = pd.to_datetime(data[dc], errors='coerce')
+                        df_tmp = pd.DataFrame({
+                            'date': dates.dt.normalize(),
+                            'dur_min': durations
+                        })
+                        now_d = pd.Timestamp.now().normalize()
+                        last7_mask = df_tmp['date'] >= (now_d - pd.Timedelta(days=7))
+                        prev7_mask = (df_tmp['date'] < (now_d - pd.Timedelta(days=7))) & (df_tmp['date'] >= (now_d - pd.Timedelta(days=14)))
+                        mean_last7 = df_tmp.loc[last7_mask, 'dur_min'].dropna().mean()
+                        mean_prev7 = df_tmp.loc[prev7_mask, 'dur_min'].dropna().mean()
+                        if pd.notna(mean_prev7) or pd.notna(mean_last7):
+                            last7_text = f"{mean_last7:.1f} dk" if pd.notna(mean_last7) else "veri yok"
+                            prev7_text = f"{mean_prev7:.1f} dk" if pd.notna(mean_prev7) else "veri yok"
+                            lines.append("- Haftalık ortalama (dk/kayıt): geçen hafta = %s | bu hafta = %s" % (prev7_text, last7_text))
+                    except Exception:
+                        pass
             except Exception:
                 pass
 
@@ -286,8 +396,23 @@ class CimentoVardiyaAI:
             user_question=user_question if user_question else "Yok"
         )
         
-        # System prompt + User prompt kombinasyonu
-        full_prompt = f"{SYSTEM_PROMPT}\n\n{user_prompt}"
+        # Çıktı kısıtları (halüsinasyon önleme + uzunluk kontrolü)
+        constraints = f"""
+\n---\n
+🔒 ÇIKTI KISITLARI (Kesin Uyman Gerekir)
+- Maksimum yanıt uzunluğu: {self.max_tokens} token (gereksiz tekrar, uzun alıntı yok)
+- Veri dışı iddia üretme; belirsizse "veri yok" de
+- Finansal rakam, TL/USD/₺, ROI vb. UYDURMA; geçerse kaldır
+- Dış link, resim/grafik embed etme; düz metin ve gerekirse ASCII tablo
+- Yüzdeler Toplam = %100 (±1), aksi durumda normalleştir ve belirt
+ - Eylem Planı bölümlerinde placeholder/boş satır kullanma ("...", "devam eden öneriler" vb. YASAK)
+  - Eylem Planı öneri adedi dinamik; sadece son 12 ayda yinelenen/etkisi süren sorunlara aksiyon üret. 24+ ay önceki münferit olaylara aksiyon yazma; gerekiyorsa "tarih eski — doğrulama/izleme" notu ekle.
+  - Eylem formatı: [Öneri] – Dayanak veri (N/%, süre, tarih aralığı) – Sorumlu – Başarı metriği – Öncelik(1-10) – Zorluk(Kolay/Orta/Zor) – Süre
+ - Yönetici Özetinde 8-15 kritik bulgu; gerekiyorsa daha fazla. Sırala: frekans, süre ve etki.
+"""
+
+        # System prompt + User prompt + kısıtlar
+        full_prompt = f"{SYSTEM_PROMPT}\n\n{user_prompt}\n{constraints}"
         
         return full_prompt
 
@@ -297,13 +422,13 @@ class CimentoVardiyaAI:
         try:
             if self.provider == "openai":
                 response = self.client.chat.completions.create(
-                    model=self.model,
+                model=self.model,
                     messages=[{"role": "user", "content": prompt}],
-                    max_tokens=self.max_tokens,
-                    temperature=0.8,
-                    top_p=0.95,
-                    frequency_penalty=0.6,
-                    presence_penalty=0.6,
+                max_tokens=self.max_tokens,
+                temperature=self.temperature,
+                    top_p=0.9,
+                    frequency_penalty=0.7,
+                    presence_penalty=0.4,
                 )
                 analysis_text = response.choices[0].message.content
                 token_usage = {
@@ -323,7 +448,7 @@ class CimentoVardiyaAI:
                 payload = {
                     "model": self.model,
                     "max_tokens": self.max_tokens,
-                    "temperature": 0.8,
+                    "temperature": self.temperature,
                     "messages": [{"role": "user", "content": prompt}]
                 }
                 r = requests.post(url, headers=headers, data=json.dumps(payload), timeout=60)
@@ -346,7 +471,7 @@ class CimentoVardiyaAI:
                     "model": self.model,
                     "messages": [{"role": "user", "content": prompt}],
                     "max_tokens": self.max_tokens,
-                    "temperature": 0.8
+                    "temperature": self.temperature
                 }
                 r = requests.post(url, headers=headers, data=json.dumps(payload), timeout=60)
                 r.raise_for_status()
@@ -357,6 +482,7 @@ class CimentoVardiyaAI:
             else:
                 raise ValueError(f"Desteklenmeyen sağlayıcı: {self.provider}")
 
+            analysis_text = self._sanitize_response(analysis_text)
             structured_analysis = self._parse_analysis_response(analysis_text)
             return {
                 'analysis': structured_analysis,
@@ -365,12 +491,69 @@ class CimentoVardiyaAI:
                 'timestamp': datetime.now().isoformat()
             }
         except Exception as e:
+            # max_tokens/context hatasında otomatik düşür ve yeniden dene
+            msg = str(e).lower()
+            if any(k in msg for k in ["max_token", "context", "too many tokens", "reduce"]):
+                try:
+                    new_max = max(512, int(self.max_tokens * 0.75))
+                    if new_max == self.max_tokens:
+                        new_max = max(512, self.max_tokens - 512)
+                    self.max_tokens = new_max
+                    return self._call_llm_api(prompt)
+                except Exception:
+                    pass
             return {
                 'error': f"AI analizi hatası: {str(e)}",
                 'analysis': None,
                 'token_usage': None,
                 'timestamp': datetime.now().isoformat()
             }
+
+    def _sanitize_response(self, text: str) -> str:
+        """Basit halüsinasyon ve biçim temizliği: para/URL kaldır, aşırı uzunluğu kes."""
+        if not text:
+            return text
+        try:
+            # URL'ler
+            text = re.sub(r"https?://\S+", "", text)
+            # Para birimleri
+            text = re.sub(r"(\₺|\$|USD|TL|TRY|EUR|€)", "", text, flags=re.IGNORECASE)
+            # Yinelenen boş satırları sadeleştir
+            text = re.sub(r"\n{3,}", "\n\n", text)
+            # Yüzde %0 sorunlarını çöz
+            text = re.sub(r"\(%\s*0\s*\)", "(≈%<1)", text)
+            text = re.sub(r"%\s*0\b", "≈%<1", text)
+            text = re.sub(r"(\d+)\s*\(\s*%\s*0\s*\)", r"\1 (≈%<1)", text)
+            # Placeholder X/Y saat|dk -> veri yok
+            text = re.sub(r"=\s*[XYxy]\s*(saat|dk|dakika)", "= veri yok", text)
+            text = re.sub(r"\b[XYxy]\s*(saat|dk|dakika)\b", "veri yok", text)
+            # Dayanak veri temizliği - daha kapsamlı
+            text = re.sub(r"(?i)Dayanak\s*veri\s*:\s*(N/?A|NA|N\.A\.?|NONE|null|eksik|yok|boş)\b", "Dayanak veri: veri yok", text)
+            text = re.sub(r"(?i)Dayanak\s*veri\s*:\s*veri\s*yok\s*—", "Dayanak veri: veri yok —", text)
+            # Çok uzun Dayanak veri satırlarını kısalt
+            text = re.sub(r"(?i)(Dayanak\s*veri\s*:\s*veri\s*yok)[\s—]*([^—]*—[^—]*—[^—]*—[^—]*—[^—]*)", r"\1 — \2", text)
+            # Eylem planı alan adlarında bozulma: '-soru-' tekrarlarını düzelt
+            text = re.sub(r"(?i)(?:[\-—]\s*soru\s*){2,}", " — Sorumlu — ", text)
+            text = re.sub(r"(?i)(?<=[-—])\s*soru\s*(?=[-—])", " Sorumlu ", text)
+            # Satır limiti (çok uzun raporları sınırlı tut)
+            lines = text.splitlines()
+            new_lines = []
+            for line in lines:
+                # MTBF/MTTR yer tutucu/uygunsuz değerleri bastır
+                if re.search(r"\bMTBF\b|\bMTTR\b", line, flags=re.IGNORECASE):
+                    # Sayı var mı? X/Y/N/A/NA/dash varsa veri yok kabul et
+                    if not re.search(r"\d", line) or re.search(r"\b(X|Y|N/?A)\b|--|—", line, flags=re.IGNORECASE):
+                        line = re.sub(r":.*$", ": veri yok (zaman damgalı arıza/onarım verisi eksik)", line)
+                new_lines.append(line)
+            if len(new_lines) > 4000:
+                new_lines = new_lines[:4000] + ["... [çıktı kısaltıldı]"]
+            text = "\n".join(new_lines)
+            # Karakter üst limiti
+            if len(text) > 120000:
+                text = text[:120000] + "\n... [çıktı kısaltıldı]"
+            return text
+        except Exception:
+            return text
 
     def _parse_analysis_response(self, response_text: str) -> Dict:
         """AI yanıtını yapılandırılmış formata çevir"""

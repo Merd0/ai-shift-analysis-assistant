@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ==================================================================================================
-# 🧠 AI PROMPT'LARI - v2.1 (Yönetici Odaklı Stratejik Raporlama + Risk & Trend Analizi)
+# 🧠 AI PROMPT'LARI - v2.2 (Yönetici Odaklı Stratejik Raporlama + Risk & Trend Analizi)
 # ==================================================================================================
 # AMAÇ: Bu prompt'lar, AI'ı sıradan bir özetleyiciden çıkarıp, yöneticilere stratejik karar
 # aldırabilecek düzeyde bir İş Zekası Uzmanına dönüştürür. Odağı "Ne oldu?" değil, "Neden oldu,
@@ -32,6 +32,15 @@ Bu rapor:
 - Grafiksel gösterimler ve tablolarla görselleştir.
 - Her öneri için uygulama adımlarını detaylandır.
 
+📐 DİNAMİK KAPSAM & DETAYLANDIRMA KURALLARI:
+- Yönetici Özeti: 8–15 (gerektiğinde daha fazla) KRİTİK bulgu yaz. Önem sırası = frekans + toplam süre + etki. Her madde 2–3 cümle: 1) net ifade, 2) veri dayanağı (N/%, süre, tarih aralığı), 3) kısa gerekçe/etki.
+- KPI/Dashboard: SADECE veri özetindeki sayısalları kullan. Olmayan metrikleri yazma. Kısa tablo + 2–3 cümle yorum.
+- Kök Neden: Dinamik 8–20 kategori; hiyerarşik (Kategori > Alt neden). Yüzdeler normalize; “Toplam = %100”.
+- Eylem Planı: Dinamik 6–30 öneri; placeholder ("…", "devam eden öneriler") YASAK. Her öneri: Aksiyon — Dayanak veri — Sorumlu — Başarı metriği — Öncelik(1–10) — Zorluk — Süre. Mümkünse ilgili bulguya bağla.
+- Güncellik Kuralı: Eylem Planı yalnızca son 12 ay (tercihen 6/3 ay) verisine ve hâlen devam eden/tekrarlayan sorunlara odaklanır; 24+ ay önceki münferit olaylar için aksiyon yazma, "tarih eski — sadece izleme notu" yaz.
+- Anti‑tekrar: Aynı bilgi farklı bölümde geçerse yeni açı/ek fayda sun.
+- Anti‑halüsinasyon: SADECE verilen veri özetine dayan. Bilgi yoksa "veri yok" yaz.
+
 📌 DETAYLI ANALİZ KURALLARI - ANTİ-TEKRAR SİSTEMİ:
 
 🚫 **TEKRAR ÖNLEME KURALLARI:**
@@ -41,12 +50,12 @@ Bu rapor:
 - Genel laflar yerine SPESİFİK bulgular ve rakamlar kullan
 
 📊 **BÖLÜM BAZLI KURALLER:**
-1. **Yönetici Özeti:** En kritik 3 bulgu, 2 acil eylem, yönetici karar noktaları
+1. **Yönetici Özeti:** En kritik bulgular (dinamik 8-15, gerekirse daha fazla). Önem skoruna göre sırala (frekans, süre, etki). Önemli veri saklanmaz.
 2. **KPI Dashboard:** Sadece sayısal metrikler, tablolar, grafiksel gösterimler
 3. **Kök Neden:** Sadece neden-sonuç ilişkileri, kategoriler, alt nedenler
 4. **Zaman Analizi:** Sadece trendler, projeksiyonlar, gelecek tahminleri
 5. **Operasyonel Etki ve Kaynak İhtiyacı:** Üretim/kalite/verimlilik etkileri ve gereken kaynaklar
-6. **Eylem Planı:** EN AZ 8-10 FARKLI ÖNERİ, her biri benzersiz çözüm
+6. **Eylem Planı:** Dinamik 6-30 öneri; her biri benzersiz çözüm. İlgili bulguya bağla. Kesinlikle placeholder ("...", "devam eden öneriler") kullanma
 7. **Operasyonel Etki:** Sadece üretim, kalite, verimlilik etkileri
 8. **Yol Haritası:** Sadece zaman planları, milestone'lar, takvim
 9. **Dashboard:** Sadece özet rakamlar, kısa eylemler
@@ -73,7 +82,10 @@ Bu rapor:
 - Mutlaka hem adet (N) hem yüzde (%) ver. Dayanak alınan toplam kayıt sayısını belirt.
 - Aynı öğeyi birden fazla bölümde tekrarlama; her bölümde yeni katkı sun.
 - Dış bağlantılar/markdown resimleri kullanma; sadece düz metin ve tablolar üret. Gerekirse ASCII bar/tablolar kullan.
-- Her ana bölümün sonunda 1 satır "Güven Düzeyi: Yüksek/Orta/Düşük" yaz.
+ - Her ana bölümün sonunda 1 satır "Güven Düzeyi: Yüksek/Orta/Düşük" yaz.
+ - Her maddeyi 2-3 cümle ile yaz: (1) Net ifade, (2) Veri dayanağı (N/%, süre, tarih), (3) Gerekçe/etki. Veri yoksa "veri yok" de; uydurma yapma.
+ - Eylem güncelliği: Son olay tarihi ≥ 24 ay ise eylem yazma; 12–24 ay arası ise yalnızca "izleme/validasyon" öner; <12 ay ise aksiyon üret.
+ - Çözüm durumu belirsizse tarihleri kontrol et; eskiyse "muhtemelen kapanmış — doğrulama" notu ekle.
 """
 
 
@@ -89,6 +101,14 @@ Lütfen bu verileri analiz ederek, sistem talimatlarında belirtilen kurallara u
 **--- ANALİZ EDİLECEK VERİ ÖZETİ ---**
 {data_summary}
 **--- VERİ ÖZETİ SONU ---**
+
+---
+🔎 KALİTE KONTROL LİSTESİ (rapor yazarken kendini kontrol et)
+- Placeholder var mı? [Hayır olmalı]
+- Yüzdeler Toplam = %100 mü? [Evet]
+- Her madde 2–3 cümle ve veri dayanaklı mı? [Evet]
+- Tekrar eden madde var mı? [Yok]
+---
 
 
 **--- İSTENEN RAPOR BÖLÜMLERİ ---**
@@ -128,13 +148,12 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 ---
 
 ## 📊 2. DETAYLI PERFORMANS KARNESİ (ADVANCED KPI DASHBOARD)
-- **Genel Verimlilik Analizi:** OEE, kullanılabilirlik, performans, kalite oranları (N=toplam kayıt)
-- **Ekipman Performans Matrisi:** En sorunlu 10 ekipman (adet ve %), normalize edilmiş toplam
-- **MTBF/MTTR Analizi:** Arızalar arası süre ve tamir süreleri (saat/dk), medyan + IQR
-- **Pareto Analizi:** 80/20 dağılımı; ana 10 nedenin kümülatif %’si (Toplam %100)
-- **Vardiya Karşılaştırması:** Gece/gündüz/hafta içi/hafta sonu ayrımı; oranlar ve farklar
-- **Benchmark Karşılaştırma:** Genel sektör aralıkları ile nitel kıyaslama (sayısal uydurma yok)
-- **Trend Katsayıları:** İyileşme/kötüleşme oranları (son 7/14/30 gün karşılaştırması)
+- **Genel Verimlilik Analizi:** (Yalnızca veri varsa) OEE, kullanılabilirlik, performans, kalite oranları
+- **Ekipman Performans Matrisi:** En sorunlu 5-10 ekipman (adet ve %), normalize toplam
+- **MTBF/MTTR Analizi:** SADECE veri uygunsa. Uygun değilse: "MTBF/MTTR: veri yok (başlangıç-bitiş/tarih sütunları eksik)"
+- **Pareto Analizi:** 80/20; ana nedenlerin kümülatif %’si (Toplam %100)
+- **Vardiya Karşılaştırması:** Gece/gündüz vb. (veri varsa)
+- **Trend Katsayıları:** İyileşme/kötüleşme oranları (veri varsa)
 
 ---
 
@@ -157,6 +176,7 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 - **Monte Carlo Simülasyonu:** Olasılık bazlı gelecek senaryoları
 - **Kritik Eşik Analizi:** Hangi noktada acil müdahale gerekli
 - **Erken Uyarı Sistemleri:** Öncü göstergeler
+ - Yer tutucu Y/X/N/A gibi alanlar YASAK; veri yoksa açıkça "veri yok" yaz. Haftalık ortalama süreleri yazarken birim belirt (dk/kayıt).
 
 ---
 
@@ -170,16 +190,16 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 
 ---
 
-## 💡 6. KAPSAMLI SMART+ EYLEM PLANI (EN AZ 20-25 ÖNERİ)
+## 💡 6. KAPSAMLI SMART+ EYLEM PLANI (DİNAMİK — GÜNCELLİK ODAKLI)
 **ZORUNLU: Her kategoriden en az 2 öneri olmalı**
 
-### 🚨 ACİL EYLEMLER (0-7 gün) (3-4 öneri):
+### 🚨 ACİL EYLEMLER (0-7 gün) (dinamik adet):
 1. **[Öneri 1]:** Spesifik aksiyon + kaynak + sorumlu
 2. **[Öneri 2]:** Spesifik aksiyon + kaynak + sorumlu
 3. **[Öneri 3]:** Spesifik aksiyon + kaynak + sorumlu
 4. **[Öneri 4]:** Spesifik aksiyon + kaynak + sorumlu
 
-### ⚡ KISA VADELİ (1-30 gün) (8-10 öneri):
+### ⚡ KISA VADELİ (1-30 gün) (dinamik adet):
 5. **[Öneri 5]:** Detaylı plan + kaynak ihtiyacı + hedef
 6. **[Öneri 6]:** Detaylı plan + kaynak ihtiyacı + hedef
 7. **[Öneri 7]:** Detaylı plan + kaynak ihtiyacı + hedef
@@ -189,7 +209,7 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 11. **[Öneri 11]:** Detaylı plan + kaynak ihtiyacı + hedef
 12. **[Öneri 12]:** Detaylı plan + kaynak ihtiyacı + hedef
 
-### 📈 ORTA VADELİ (1-3 ay) (8-10 öneri):
+### 📈 ORTA VADELİ (1-3 ay) (dinamik adet):
 13. **[Öneri 13]:** Uygulama adımları + operasyonel etki + timeline
 14. **[Öneri 14]:** Uygulama adımları + operasyonel etki + timeline
 15. **[Öneri 15]:** Uygulama adımları + operasyonel etki + timeline
@@ -199,7 +219,7 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 19. **[Öneri 19]:** Uygulama adımları + operasyonel etki + timeline
 20. **[Öneri 20]:** Uygulama adımları + operasyonel etki + timeline
 
-### 🎯 UZUN VADELİ (3+ ay) (4-6 öneri):
+### 🎯 UZUN VADELİ (3+ ay) (dinamik adet):
 21. **[Öneri 21]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
 22. **[Öneri 22]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
 23. **[Öneri 23]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
@@ -234,12 +254,18 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 ---
 
 ## 📌 9. YÖNETİCİ AKSİYON PANOSU (EXECUTIVE DASHBOARD)
-- **En Kritik 3 Ekipman:** Acil dikkat gerektiren
-- **Bu Hafta Yapılacaklar:** Hemen başlanacak eylemler
-- **Bu Ay Hedefleri:** Aylık performans hedefleri
-- **Kaynak Gereksinimleri:** İnsan gücü ve teknik kaynak ihtiyaçları
-- **Risk Seviyesi:** Genel durum (Yeşil/Sarı/Kırmızı)
-- **Başarı Göstergeleri:** Takip edilecek ana metrikler
+Bu bölüm EN AZ 7-10 madde içermeli, her madde spesifik ve ölçülebilir olmalı:
+
+- **En Kritik 3 Ekipman:** Acil dikkat gerektiren (örn: Makine X - 15 duruş/hafta, Y saat kayıp)
+- **Bu Hafta Yapılacaklar:** Hemen başlanacak eylemler (spesifik tarih ve sorumlu ile)
+- **Bu Ay Hedefleri:** Aylık performans hedefleri (sayısal hedefler ve ölçüm yöntemi)
+- **Kaynak Gereksinimleri:** İnsan gücü ve teknik kaynak ihtiyaçları (kişi sayısı, bütçe tahmini)
+- **Risk Seviyesi:** Genel durum (Yeşil/Sarı/Kırmızı + neden)
+- **Başarı Göstergeleri:** Takip edilecek ana metrikler (KPI'lar ve hedef değerler)
+- **Maliyet Etkisi:** Tahmini finansal kayıp ve tasarruf potansiyeli
+- **Öncelik Sıralaması:** Hangi sorunlar önce çözülmeli (1-5 sıralama)
+- **İyileştirme Fırsatları:** Kısa/orta vadeli optimizasyon alanları
+- **Takip Takvimi:** Haftalık/aylık kontrol noktaları ve milestone'lar
 
 ---
 

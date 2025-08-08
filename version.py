@@ -5,16 +5,16 @@ Akıllı Üretim Günlüğü Asistanı - Versiyon Bilgileri
 """
 
 # Semantic Versioning: MAJOR.MINOR.PATCH
-VERSION = "1.4.1"
-VERSION_NAME = "Güvenli İş Zekası Sistemi"
-BUILD_DATE = "2025-08-08"
-BUILD_NUMBER = 141
+VERSION = "1.4.2"
+VERSION_NAME = "Gelişmiş Kalite ve Temizlik Sistemi"
+BUILD_DATE = "2025-01-08"
+BUILD_NUMBER = 142
 
 # Versiyon detayları
 VERSION_INFO = {
     'major': 1,
     'minor': 4, 
-    'patch': 1,
+    'patch': 2,
     'pre_release': None,  # alpha, beta, rc
     'build': BUILD_NUMBER
 }
@@ -42,6 +42,21 @@ FEATURES = {
 
 # Değişiklik özeti
 CHANGELOG_SUMMARY = {
+    '1.4.2': {
+        'date': '2025-01-08',
+        'type': 'quality',
+        'title': 'Gelişmiş Kalite ve Temizlik Sistemi',
+        'highlights': [
+            '%0 placeholder sorunu çözüldü (≈%<1 dönüşümü)',
+            'Dayanak veri: N/A temizliği güçlendirildi',
+            '-soru- tekrar hatası düzeltildi (— Sorumlu — formatı)',
+            'Excel çıktısında kapsamlı metin temizliği',
+            'X/Y saat placeholder\'ları "veri yok" ile değiştirildi',
+            'Yönetici Aksiyon Panosu 7-10 madde ile güçlendirildi',
+            'Haftalık ortalama duruş süresi hesaplama eklendi',
+            'Prompt sistem kuralları netleştirildi'
+        ]
+    },
     '1.4.1': {
         'date': '2025-08-08',
         'type': 'bugfix',
