@@ -4,12 +4,17 @@
 Git deployment script - Terminal Unicode sorunlarini cozer
 """
 
+# Amaç:
+# - Git add/commit/tag/push adımlarını tek komutla koordine etmek
+# - Windows/terminal unicode çıktılarında sorun yaşamamak için text/encoding parametreleriyle çalışmak
+
 import subprocess
 import sys
 import os
 
 def run_git_command(command):
     """Git komutunu calistir"""
+    # Başarılı/başarısız durumları konsola yazdırır ve boolean döndürür
     try:
         result = subprocess.run(command, shell=True, capture_output=True, text=True, encoding='utf-8')
         if result.returncode == 0:
@@ -28,8 +33,9 @@ def run_git_command(command):
 
 def main():
     """Ana deployment fonksiyonu"""
-    print("=== Git Deployment v1.4.0 ===")
-    print("AI Analiz Optimizasyonu ve Sistem Iyileştirmeleri")
+    # Sürüm etiketleme ve ana dal push işlemlerini sıralı olarak yürütür
+    print("=== Git Deployment v1.4.3 ===")
+    print("LLM Provider Seçimi ve Gelişmiş AI Entegrasyonu")
     print()
     
     # Git durumunu kontrol et
@@ -44,13 +50,13 @@ def main():
     
     # Commit yap
     print("\n3. Commit yapiliyor...")
-    commit_message = "v1.4.0: AI analiz optimizasyonu ve sistem iyileştirmeleri"
+    commit_message = "v1.4.3: LLM provider seçimi ve gelişmiş AI entegrasyonu"
     if not run_git_command(f'git commit -m "{commit_message}"'):
         print("Commit basarisiz! (Belki degisiklik yok)")
     
     # Tag olustur
     print("\n4. Tag olusturuluyor...")
-    if not run_git_command("git tag v1.4.0"):
+    if not run_git_command("git tag v1.4.3"):
         print("Tag olusturma basarisiz! (Belki zaten var)")
     
     # Push yap
@@ -69,13 +75,15 @@ def main():
         print("✗ Tag push basarisiz")
     
     print("\n=== DEPLOYMENT TAMAMLANDI ===")
-    print("v1.4.0 basariyla GitHub'a yuklendi!")
+    print("v1.4.3 basariyla GitHub'a yuklendi!")
     print()
     print("Yeni ozellikler:")
-    print("- AI maliyet uydurma onleme sistemi")
-    print("- Sadece veriye dayali analiz")
-    print("- Basit ve karli GUI")
-    print("- Optimize edilmis prompt sistemi")
+    print("- Çoklu LLM provider desteği (OpenAI/Anthropic/XAI)")
+    print("- Model seçim dropdown menüsü")
+    print("- Gelişmiş API çağrı sistemi")
+    print("- Anti-hallucination iyileştirmeleri")
+    print("- Requests kütüphanesi entegrasyonu")
+    print("- Prompt normalizasyon geliştirmeleri")
     print()
     print("GitHub'da yeni release olarak gorunecek!")
     

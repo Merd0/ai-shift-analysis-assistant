@@ -1,8 +1,10 @@
 # OpenAI API Configuration
-# GÜVENLİK: API key'ler kodda saklanmaz; kullanıcı GUI'de girer
+# Amaç: Varsayılan model/parametre ve sağlayıcı listelerini merkezî konfig ile yönetmek
+# GÜVENLİK: API key'ler kodda saklanmaz; kullanıcı GUI'de girer (runtime'da bellek içi tutulur)
 OPENAI_API_KEY = ""  # Boş - güvenlik için
 
 # Varsayılan model ayarları (OpenAI)
+# Not: GUI/AI katmanı bu varsayılanları override edebilir (kullanıcı tercihi)
 MODEL_NAME = "gpt-4o-mini"
 MAX_TOKENS = 6000
 TEMPERATURE = 0.7
@@ -12,6 +14,7 @@ LANGUAGE = "Turkish"
 
 # Sağlayıcı ve model listeleri (GUI ve analiz tarafından kullanılır)
 # Not: Gerçek erişim, ilgili sağlayıcının hesabında yetkilendirilen modellere bağlıdır
+#      Bu liste UI tarafında combobox doldurma ve doğrulama amaçlıdır
 PROVIDERS = {
     "openai": {
         "label": "OpenAI",
@@ -41,7 +44,8 @@ PROVIDERS = {
     }
 }
 
-DEFAULT_PROVIDER = "openai"
+DEFAULT_PROVIDER = "openai"  # GUI açılışında seçili sağlayıcı
 
 # GÜVENLİK NOTU:
 # Bu dosyada API key tutulmaz. Kullanıcı GUI'de sağlayıcıya uygun key'i girer.
+# Çevresel değişkenler üzerinden okuma tercih edilecekse, GUI tarafında ele alınmalıdır.

@@ -5,6 +5,11 @@ Akıllı Üretim Günlüğü - Excel Analiz ve KVKK Temizleme Sistemi
 Bu sistem Excel dosyalarını analiz eder ve kişisel verileri temizler.
 """
 
+# Bu modülün amacı:
+# - Excel dosyalarını okuyup temel metrikleri çıkarmak
+# - KVKK uyumu için kişisel veri içeren kolonları tespit edip kaldırmak
+# - Analiz özetini üretmek ve temiz veriyi 'cleaned_data/' altına kaydetmek
+
 import pandas as pd
 import numpy as np
 import re
@@ -16,14 +21,19 @@ warnings.filterwarnings('ignore')
 
 class KVKKDataCleaner:
     """KVKK uyumlu veri temizleme sınıfı"""
+    # Sorumluluklar:
+    # - Kolon isimlerinden kişisel veriyi saptama (whitelist/blacklist yaklaşımı)
+    # - Kolon içeriğinden kişisel veriyi saptama (regex + skor bazlı eşik)
+    # - Güvenli (işe özgü) kolonları koruma
     
     def __init__(self):
         # Kişisel veri olabilecek kolon isimleri (Türkçe + İngilizce)
+        # Not: İsim/iletişim/kimlik gibi alanlar burada geniş kapsanır
         self.personal_data_keywords = [
             # İsim soyisim - Genişletilmiş liste
             'isim', 'ad', 'soyad', 'name', 'surname', 'firstname', 'lastname',
             'full_name', 'tam_ad', 'personel_adi', 'calisan_adi', 'adi', 'soyadi',
-            'personel', 'personnel', 'calisan', 'employee', 'worker', 'islci',
+            'personel', 'personnel', 'calisan', 'employee', 'worker', 'isci',
             'baslatan', 'başlatan', 'operator', 'operatör', 'sorumlu', 'responsible',
             'vardiyaci', 'vardiyacı', 'shift_worker', 'vardiya_sorumlusu',
             'birlikte_calisan', 'birlikte_çalışan', 'team_member', 'takim_uyesi',
@@ -44,6 +54,7 @@ class KVKKDataCleaner:
         ]
         
         # Güvenli kolonlar (işle ilgili, kişisel olmayan) - GENİŞLETİLMİŞ
+        # Not: Bu kelimeleri içeren kolonlar kişisel veri şüphesi olsa bile korunur
         self.safe_keywords = [
             # Temel sistem kolonları
             'id', 'tarih', 'date', 'saat', 'time', 'vardiya', 'shift', 'bilgisi',
@@ -81,6 +92,7 @@ class KVKKDataCleaner:
     
     def is_personal_data_column(self, column_name: str) -> bool:
         """Kolonun kişisel veri içerip içermediğini kontrol eder"""
+        # Öncelik: güvenli kelime (erken dönüş) → belirgin kişisel desenler → dar kelime eşleşmesi
         column_lower = column_name.lower().strip()
         
         # Boşlukları ve özel karakterleri temizle
@@ -129,6 +141,12 @@ class KVKKDataCleaner:
     
     def detect_personal_data_by_content(self, series: pd.Series, column_name: str = "") -> bool:
         """İçeriğe bakarak kişisel veri tespiti yapar - DAHA HASSAS"""
+        # Yaklaşım:
+        # 1) Küçük örneklem al
+        # 2) Telefon/TC/email regex'leriyle yüksek ağırlıklı skorla
+        # 3) İsim formatı ve yaygın isim sözlüğüyle ek puanla
+        # 4) Teknik terim içeriyorsa isim sayımını yok say
+        # 5) Skor/örnek oranı eşik (personel ilişkili kolonlar için daha sıkı)
         if series.dtype == 'object':
             sample_values = series.dropna().head(20).astype(str)
             if len(sample_values) == 0:
@@ -248,6 +266,8 @@ class KVKKDataCleaner:
     
     def clean_dataframe(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         """DataFrame'i KVKK uyumlu hale getirir"""
+        # İki aşamalı kontrol uygular: önce kolon adı, sonra içerik.
+        # Eşik üstü kişisel veri şüphesinde ilgili kolon tamamen kaldırılır.
         removed_columns = []
         removal_reasons = {}
         df_clean = df.copy()
@@ -277,6 +297,11 @@ class KVKKDataCleaner:
 
 class ExcelAnalyzer:
     """Excel dosyalarını analiz eden ana sınıf"""
+    # Sorumluluklar:
+    # - Dosyayı yüklemek ve temel meta bilgileri çıkarmak
+    # - KVKK temizliğini çalıştırmak
+    # - Tarih/Tip/İçerik analizleri yapmak
+    # - Rapor ve çıktı operasyonlarını koordine etmek
     
     def __init__(self):
         self.cleaner = KVKKDataCleaner()
@@ -284,24 +309,14 @@ class ExcelAnalyzer:
     
     def analyze_excel_file(self, file_path: str) -> Dict:
         """Tek bir Excel dosyasını analiz eder"""
+        # Akış:
+        # 1) Dosyayı oku → 2) KVKK temizliği → 3) Tarih kolonlarını bul
+        # 4) Veri tipleri ve içerik özetini çıkar → 5) Yapılandırılmış sonuç döndür
         try:
             print(f"\n🔍 Analiz ediliyor: {os.path.basename(file_path)}")
             
             # Excel dosyasını oku
-            # Tüm sheet'leri oku, birleştir (önemli veri kaybını önle)
-            try:
-                xls = pd.ExcelFile(file_path)
-                sheets = []
-                for sheet_name in xls.sheet_names:
-                    try:
-                        part = pd.read_excel(xls, sheet_name=sheet_name)
-                        part['__sheet__'] = sheet_name
-                        sheets.append(part)
-                    except Exception:
-                        continue
-                df = pd.concat(sheets, ignore_index=True) if sheets else pd.read_excel(file_path)
-            except Exception:
-                df = pd.read_excel(file_path)
+            df = pd.read_excel(file_path)
             
             # Temel bilgiler
             basic_info = {
@@ -355,6 +370,7 @@ class ExcelAnalyzer:
     
     def detect_date_columns(self, df: pd.DataFrame) -> List[str]:
         """Tarih kolonlarını otomatik tespit eder"""
+        # İki strateji: isim bazlı ipucu + örnek değerleri datetime'a çevirme denemesi
         date_columns = []
         
         for column in df.columns:
@@ -380,6 +396,7 @@ class ExcelAnalyzer:
     
     def analyze_data_types(self, df: pd.DataFrame) -> Dict:
         """Veri tiplerini analiz eder"""
+        # Çıktı: tip dağılımı (adet) ve kolon bazında dtype haritası
         type_counts = df.dtypes.value_counts().to_dict()
         
         return {
@@ -389,6 +406,7 @@ class ExcelAnalyzer:
     
     def analyze_content(self, df: pd.DataFrame) -> Dict:
         """İçerik analizini yapar"""
+        # Basit içerik özeti: boşluk sayıları, benzersiz değer sayıları ve örnekler
         analysis = {
             'bos_degerler': df.isnull().sum().to_dict(),
             'benzersiz_degerler': {col: df[col].nunique() for col in df.columns},
@@ -404,6 +422,7 @@ class ExcelAnalyzer:
     
     def analyze_all_files(self) -> Dict:
         """Workspace'teki tüm Excel dosyalarını analiz eder"""
+        # Kök dizinde .xlsx/.xls dosyalarını dolaşır; her biri için tekil analiz uygular
         excel_files = [f for f in os.listdir('.') if f.endswith(('.xlsx', '.xls'))]
         
         if not excel_files:
@@ -421,6 +440,7 @@ class ExcelAnalyzer:
     
     def generate_summary_report(self, results: Dict) -> str:
         """Analiz sonuçlarının özetini oluşturur"""
+        # Konsol/dosya için okunabilir çok satırlı özet metin üretir
         report = []
         report.append("=" * 60)
         report.append("🤖 AKILLI ÜRETİM GÜNLÜĞÜ - EXCEL ANALİZ RAPORU")
@@ -472,6 +492,7 @@ class ExcelAnalyzer:
     
     def save_cleaned_data(self, results: Dict, output_dir: str = "cleaned_data"):
         """Temizlenmiş verileri kaydeder"""
+        # Excel olarak yazar; ad çakışması/dosya kilitlenmesi durumunda zaman damgalı alternatif üretir
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         
@@ -502,6 +523,7 @@ class ExcelAnalyzer:
 
 def main():
     """Ana çalıştırma fonksiyonu"""
+    # CLI kullanım senaryosu: tüm dosyaları analiz et → özet yazdır → temiz verileri ve raporu kaydet
     print("🚀 Akıllı Üretim Günlüğü - Excel Analiz Sistemi")
     print("=" * 50)
     

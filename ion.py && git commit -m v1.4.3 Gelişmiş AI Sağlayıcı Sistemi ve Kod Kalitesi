@@ -1,0 +1,5 @@
+[33md91afd7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m docs: update README to v1.4.2, add v1.4.0 and v1.4.2 changelog sections
+[33m0fc0f6f[m[33m ([m[1;33mtag: [m[1;33mv1.4.2[m[33m)[m v1.4.2: Enhanced data quality and output sanitization
+[33m40c099c[m feat(llm): add provider selection (openai/anthropic/xai), model dropdown; wire up API calls; add requests dep
+[33m8a95dbb[m prompts: anti-hallucination & normalization refinements
+[33m99efd1f[m docs(readme): bump to v1.4.1, add highlights; docs(changelog): add 1.4.1 bugfixes section

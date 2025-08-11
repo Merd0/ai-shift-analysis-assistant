@@ -5,6 +5,11 @@ AI Destekli Vardiya Devir Analiz Asistanı
 Çimento Fabrikası Vardiya Defteri Analizi için Optimize Edilmiş AI Sistemi
 """
 
+# Bu modülün amacı:
+# - Temizlenmiş vardiya verisini özetleyip güçlü bir prompt ile LLM'e iletmek
+# - Sağlayıcı (OpenAI/Anthropic/xAI) bağımlılıklarını soyutlayarak tek arayüz sunmak
+# - Yanıtı güvenlik/biçim açısından temizlemek ve yapılandırılmış çıktıya dönüştürmek
+
 from openai import OpenAI
 import requests
 import pandas as pd
@@ -52,12 +57,14 @@ class CimentoVardiyaAI:
 
     def _approx_tokens(self, text: str) -> int:
         """Basit yaklaşık token hesabı (karakter/4)."""
+        # Tahmini bağlam boyutu; güvenli alan hesaplarında kullanılır
         if not text:
             return 0
         return max(1, int(len(text) / 4))
 
     def _auto_adjust_generation_params(self, prompt: str, data_rows: int) -> None:
         """Satır sayısı ve prompt uzunluğuna göre max_tokens/sıcaklık ayarı yap."""
+        # Hedef: bağlam limitini aşmadan yeterli çıktı üretebilmek; büyük veri için sıcaklığı düşürmek
         # Bağlam limiti ve güvenli boşluk (%20 buffer)
         limit = self._context_limits.get(self.provider, 128000)
         prompt_tokens = self._approx_tokens(prompt)
@@ -86,6 +93,7 @@ class CimentoVardiyaAI:
         
     def _load_cement_context(self) -> str:
         """Çimento fabrikası için optimize edilmiş context"""
+        # Alan bilgisini prompt'a ekleyerek modelin sektör terminolojisini doğru kullanmasını sağlar
         return """
 # ÇİMENTO FABRİKASI VARDİYA DEFTERİ ANALİZ SİSTEMİ
 
@@ -168,6 +176,7 @@ class CimentoVardiyaAI:
 
         Ayrıca bazı dağılımları önceden hesaplayıp yüzde toplamını %100'e normalize eder.
         """
+        # Not: Buradaki özet, prompt boyutunu makul tutarken analiz için gerekli sinyalleri içerir
 
         lines: List[str] = []
 
@@ -371,6 +380,7 @@ class CimentoVardiyaAI:
 
     def _create_analysis_prompt(self, summary_data: str, date_range: str, analysis_options: List[str] = None, user_question: str = "") -> str:
         """Yeni gelişmiş prompt sistemi ile analiz prompt'u oluştur"""
+        # SYSTEM_PROMPT + kullanıcı şablonu + kısıtlar → tek metin halinde modele gönderilir
         
         # Yeni prompt sistemini import et
         from prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
@@ -418,6 +428,7 @@ class CimentoVardiyaAI:
 
     def _call_llm_api(self, prompt: str) -> Dict:
         """Seçili sağlayıcıya göre API çağrısı"""
+        # Sağlayıcıya özgü istemci/REST çağrıları; yanıt tek biçimde normalize edilir
 
         try:
             if self.provider == "openai":
@@ -511,6 +522,7 @@ class CimentoVardiyaAI:
 
     def _sanitize_response(self, text: str) -> str:
         """Basit halüsinasyon ve biçim temizliği: para/URL kaldır, aşırı uzunluğu kes."""
+        # Çıktıyı rapor/export uyumlu hale getirir; kural tabanlı düzenlemeler içerir
         if not text:
             return text
         try:
@@ -557,6 +569,7 @@ class CimentoVardiyaAI:
 
     def _parse_analysis_response(self, response_text: str) -> Dict:
         """AI yanıtını yapılandırılmış formata çevir"""
+        # Basit başlık/emoji işaretlerine göre bölümleri ayırır; yüzde toplamını gözlemler
         
         sections = {
             'günlük_özet': '',
@@ -619,6 +632,7 @@ class CimentoVardiyaAI:
 
     def generate_manager_report(self, analysis: Dict, period: str = "günlük") -> str:
         """Yönetici için özet rapor oluştur"""
+        # Yapılandırılmış analizden kısa, hızlı okunabilir yönetici özeti üretir
         
         if analysis.get('error'):
             return f"❌ Rapor oluşturulamadı: {analysis['error']}"
@@ -658,6 +672,7 @@ class CimentoVardiyaAI:
 
     def save_analysis(self, analysis: Dict, filename: str = None) -> str:
         """Analizi dosyaya kaydet"""
+        # JSON olarak diske yazar; isim verilmezse zaman damgalı ad üretir
         
         if not filename:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')

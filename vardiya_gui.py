@@ -5,6 +5,11 @@ Akıllı Üretim Günlüğü - GUI Arayüzü
 KVKK uyumlu Excel analiz sistemi için kullanıcı dostu arayüz
 """
 
+# Bu modülün amacı:
+# - Son kullanıcı için uçtan uca akışı basitleştiren bir GUI sağlamak
+# - Dosya seçimi → KVKK temizliği → Tarih filtresi → AI analizi → Rapor export
+# - Uzun işlemleri thread'lerde çalıştırarak arayüzü tepkisel tutmak
+
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 import pandas as pd
@@ -17,6 +22,7 @@ from version import get_version_string, VERSION_NAME
 
 class VardiyaGUI:
     def __init__(self):
+        # Ana pencere ve temel konfigürasyon (boyut, merkezleme, tema)
         self.window = tk.Tk()
         self.window.title(f"🤖 Akıllı Üretim Günlüğü Asistanı - {get_version_string()}")
         self.window.geometry("1200x800")  # Daha büyük başlangıç boyutu
@@ -32,6 +38,7 @@ class VardiyaGUI:
         self.window.configure(bg='#f0f0f0')
         
         # Çıktı klasörlerini hazırla ve çalışma alanını arşivle
+        # artifacts/{pdf,excel} klasörlerini oluşturur; kök dizindeki eski çıktıları taşır
         self._setup_artifacts()
         
         # Analyzer'ı başlat
@@ -44,6 +51,7 @@ class VardiyaGUI:
         
     def setup_styles(self):
         """Stil ayarları"""
+        # ttk teması ve başlık/bilgi etiketleri için ortak stiller
         style = ttk.Style()
         style.theme_use('clam')
         
@@ -54,6 +62,7 @@ class VardiyaGUI:
         
     def create_widgets(self):
         """Ana widget'ları oluştur"""
+        # Üst başlık + alt başlık + sekmeli (Notebook) düzen
         # Ana başlık
         title_frame = tk.Frame(self.window, bg='#f0f0f0', pady=10)
         title_frame.pack(fill='x')
@@ -79,6 +88,7 @@ class VardiyaGUI:
         
     def create_file_analysis_tab(self):
         """Dosya analizi sekmesi"""
+        # Dosya seçimi, KVKK bilgilendirmesi ve analiz tetikleme alanı
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="📁 Dosya Analizi")
         
@@ -118,6 +128,7 @@ class VardiyaGUI:
         
     def create_date_filter_tab(self):
         """Tarih filtreleme sekmesi"""
+        # Hazır aralıklar + özel tarih aralığı girişleri + özet paneli
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="📅 Tarih Filtresi")
         
@@ -167,6 +178,7 @@ class VardiyaGUI:
         
     def create_ai_analysis_tab(self):
         """AI analizi sekmesi"""
+        # Sağlayıcı/model seçimi, opsiyonel gelişmiş ayarlar ve sonuç alanı
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="🤖 AI Analizi")
         
@@ -197,6 +209,7 @@ class VardiyaGUI:
         # Sağlayıcıya göre model listesi
         def refresh_models(*args):
             provider = self.provider_var.get()
+            # Seçilen sağlayıcıya göre model listesini dinamik güncelle
             try:
                 from config import PROVIDERS
                 models = PROVIDERS.get(provider, {}).get('models', [])
@@ -234,6 +247,7 @@ class VardiyaGUI:
         # Otomatik seçiliyken alanları devre dışı bırak
         def _toggle_adv_state(*_):
             state = 'disabled' if self.auto_gen_settings_var.get() else 'normal'
+            # Otomatik modda manuel alanları devre dışı bırak
             try:
                 self.max_tokens_entry.configure(state=state)
                 self.temperature_entry.configure(state=state)
@@ -285,6 +299,7 @@ class VardiyaGUI:
         
     def create_reports_tab(self):
         """Raporlar sekmesi"""
+        # PDF/Excel export ve önizleme alanı
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="📄 Raporlar")
         
@@ -331,6 +346,7 @@ class VardiyaGUI:
         
     def select_file(self):
         """Excel dosyası seç"""
+        # Kullanıcıdan dosya yolu al ve etikete yaz
         file_path = filedialog.askopenfilename(
             title="Excel Dosyası Seç",
             filetypes=[("Excel files", "*.xlsx *.xls"), ("All files", "*.*")]
@@ -342,6 +358,7 @@ class VardiyaGUI:
             
     def analyze_file(self):
         """Seçilen dosyayı analiz et"""
+        # Akış: UI temizlik → Analyze → Sonuçları yazdır → Temiz veriyi tut
         if not hasattr(self, 'current_file'):
             messagebox.showerror("Hata", "Lütfen önce bir Excel dosyası seçin!")
             return
@@ -370,6 +387,7 @@ class VardiyaGUI:
     
     def display_analysis_results(self):
         """Analiz sonuçlarını göster"""
+        # ExcelAnalyzer çıktısını kullanarak okunabilir özet üretir
         results = self.analysis_results
         text = []
         
@@ -410,6 +428,7 @@ class VardiyaGUI:
     
     def apply_date_filter(self):
         """Tarih filtresini uygula"""
+        # Seçilen aralığa göre veriyi süz ve özetini yazdır
         if self.current_data is None:
             messagebox.showwarning("Uyarı", "Önce bir dosya analiz edin!")
             return
@@ -440,6 +459,7 @@ class VardiyaGUI:
     
     def filter_data_by_date(self, df, start_date, end_date):
         """Veriyi tarihe göre filtrele"""
+        # Tespit edilen ilk tarih kolonu üzerinden aralık filtresi uygular
         if start_date is None or end_date is None:
             return df
         
@@ -464,6 +484,7 @@ class VardiyaGUI:
     
     def show_filtered_summary(self, filtered_df, start_date, end_date):
         """Filtrelenmiş veri özetini göster"""
+        # Kayıt sayıları ve kolon bazlı hızlı özet
         summary = []
         
         if start_date and end_date:
@@ -492,6 +513,7 @@ class VardiyaGUI:
     
     def start_ai_analysis(self):
         """AI analizini başlat"""
+        # Gerekli girdiler kontrol edilir; uzun işlem ayrı thread'de çalıştırılır
         if not hasattr(self, 'filtered_data') and self.current_data is None:
             messagebox.showwarning("Uyarı", "Önce veri yükleyin ve filtreleyin!")
             return
@@ -510,6 +532,7 @@ class VardiyaGUI:
     
     def run_ai_analysis(self, api_key):
         """AI analizini çalıştır (thread'de) - Yeni Gelişmiş Sistem"""
+        # Seçenekleri topla → CimentoVardiyaAI ile analiz çağrısı → UI'ye sonucu yaz
         try:
             # Yeni AI analyzer'ı import et
             from ai_analyzer import CimentoVardiyaAI
@@ -592,6 +615,7 @@ class VardiyaGUI:
     
     def display_ai_result(self, result):
         """AI sonucunu göster - tam sayfa görüntüleme"""
+        # Sonucu AI sekmesine ve rapor önizleme alanına kopyalar
         self.ai_result_text.delete(1.0, tk.END)
         self.ai_result_text.insert(tk.END, f"🤖 AI ANALİZ SONUCU\n{'='*50}\n\n{result}")
         
@@ -612,6 +636,7 @@ class VardiyaGUI:
     
     def export_pdf(self):
         """PDF rapor export et"""
+        # ReportLab ile sade PDF üretimi; başlık, tarih ve metin blokları
         try:
             from reportlab.lib.pagesizes import A4
             from reportlab.lib.styles import getSampleStyleSheet
@@ -709,6 +734,7 @@ class VardiyaGUI:
     
     def export_excel(self):
         """Excel rapor export et - AI analiz sonuçlarını içerir"""
+        # OpenPyXL ile çok satırlı metni sığdıracak şekilde hücreleri sarar ve stiller uygular
         # AI rapor içeriğini kontrol et
         ai_report = self.ai_result_text.get(1.0, tk.END).strip()
         
@@ -864,6 +890,7 @@ class VardiyaGUI:
     
     def export_word(self):
         """Word rapor export et"""
+        # Placeholder: ileride Word çıktısı desteklenecek
         messagebox.showinfo("Bilgi", "Word export özelliği geliştirilecek!")
     
     def create_about_tab(self):
@@ -980,6 +1007,7 @@ class VardiyaGUI:
     # ---------------------- Yardımcılar: Çıktı arşivleme ----------------------
     def _setup_artifacts(self):
         """Çıktı klasörlerini hazırlar ve kök dizindeki PDF/Excel dosyalarını arşivler."""
+        # Kullanıcı klasörünü temiz tutmak için dosyaları artifacts altına taşıma
         base = os.getcwd()
         self.artifacts_dir = os.path.join(base, 'artifacts')
         self.artifacts_pdf_dir = os.path.join(self.artifacts_dir, 'pdf')
@@ -994,6 +1022,7 @@ class VardiyaGUI:
 
     def _auto_archive_outputs(self):
         """Kök dizindeki PDF/XLS/XLSX dosyalarını artifacts altına taşır (ad çakışmalarını önler)."""
+        # Var olan dosyaları güvenli şekilde yeni hedefine taşır; ad çakışırsa zaman damgası ekler
         try:
             root = os.getcwd()
             for name in os.listdir(root):

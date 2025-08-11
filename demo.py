@@ -5,6 +5,11 @@ Akıllı Üretim Günlüğü Asistanı - Demo Scripti
 Bu script sistemi kolay test etmek için hazırlanmıştır.
 """
 
+# Bu script ne yapar?
+# - Gerekli bağımlılıkları kontrol eder (opsiyonel kurulum akışı)
+# - Konsoldan Excel analizini çalıştırır veya GUI'yi başlatır
+# - Sistem bilgilerini ve çalışma alanındaki dosya özetini gösterir
+
 import os
 import sys
 import subprocess
@@ -12,6 +17,7 @@ import time
 
 def check_requirements():
     """Gerekli paketlerin yüklü olup olmadığını kontrol et"""
+    # Basit import denemesiyle eksikleri listeler; kullanıcıya yükleme teklifi sunar
     required_packages = ['pandas', 'openpyxl', 'numpy', 'openai']
     missing_packages = []
     
@@ -42,6 +48,7 @@ def check_requirements():
 
 def run_console_demo():
     """Konsol demo'sunu çalıştır"""
+    # ExcelAnalyzer ile kök dizindeki tüm Excel dosyalarını analiz eder, özet yazdırır ve temiz veriyi kaydeder
     print("\n" + "="*60)
     print("🤖 KONSOL DEMO - Excel Analiz Sistemi")
     print("="*60)
@@ -69,6 +76,7 @@ def run_console_demo():
 
 def run_gui_demo():
     """GUI demo'sunu çalıştır"""
+    # Tk tabanlı GUI'yi başlatır; kullanıcı etkileşimi ile uçtan uca akışı gösterir
     print("\n" + "="*60)
     print("🖥️ GUI DEMO - Grafik Arayüz")
     print("="*60)
@@ -98,6 +106,7 @@ def show_menu():
 
 def show_system_info():
     """Sistem bilgilerini göster"""
+    # Python sürümü, mevcut Excel dosyaları ve cleaned_data içerik sayısını çıktı verir
     print("\n" + "="*60)
     print("📋 SİSTEM BİLGİLERİ")
     print("="*60)
@@ -121,6 +130,7 @@ def show_system_info():
 
 def main():
     """Ana fonksiyon"""
+    # Basit CLI menüsü: Konsol/GUI demo, sistem bilgisi ve paket kontrolü
     print("🚀 Demo başlatılıyor...")
     time.sleep(1)
     

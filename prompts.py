@@ -4,9 +4,10 @@
 # ==================================================================================================
 # 🧠 AI PROMPT'LARI - v2.2 (Yönetici Odaklı Stratejik Raporlama + Risk & Trend Analizi)
 # ==================================================================================================
-# AMAÇ: Bu prompt'lar, AI'ı sıradan bir özetleyiciden çıkarıp, yöneticilere stratejik karar
-# aldırabilecek düzeyde bir İş Zekası Uzmanına dönüştürür. Odağı "Ne oldu?" değil, "Neden oldu,
-# ne olacak ve şimdi ne yapmalıyız?" olan bir analiz yapısı sağlar.
+# Bu dosyanın amacı:
+# - LLM'e verilecek system/user prompt şablonlarını merkezi olarak yönetmek
+# - Analiz bölümlerini açık kurallarla tanımlayıp tutarlı çıktı almak
+# - Anti-tekrar / anti-halüsinasyon kurallarını standartlaştırmak
 # ==================================================================================================
 
 
