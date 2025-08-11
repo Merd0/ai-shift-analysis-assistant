@@ -4,17 +4,21 @@
 Akıllı Üretim Günlüğü Asistanı - Versiyon Bilgileri
 """
 
+# Bu dosyanın amacı:
+# - Semantik versiyon bilgilerini ve özellik bayraklarını merkezi olarak tutmak
+# - GUI ve CLI'da gösterilecek özet/veri sağlayıcı yardımcı fonksiyonlar sunmak
+
 # Semantic Versioning: MAJOR.MINOR.PATCH
-VERSION = "1.4.2"
-VERSION_NAME = "Gelişmiş Kalite ve Temizlik Sistemi"
+VERSION = "1.4.3"
+VERSION_NAME = "Gelişmiş AI Sağlayıcı Sistemi ve Kod Kalitesi"
 BUILD_DATE = "2025-01-08"
-BUILD_NUMBER = 142
+BUILD_NUMBER = 143
 
 # Versiyon detayları
 VERSION_INFO = {
     'major': 1,
     'minor': 4, 
-    'patch': 2,
+    'patch': 3,
     'pre_release': None,  # alpha, beta, rc
     'build': BUILD_NUMBER
 }
@@ -37,11 +41,32 @@ FEATURES = {
     'trend_prediction': True,       # v1.2.0'da eklendi
     'secure_prompt_system': True,   # v1.4.0'da eklendi
     'no_cost_hallucination': True,  # v1.4.0'da eklendi
-    'data_only_analysis': True      # v1.4.0'da eklendi
+    'data_only_analysis': True,     # v1.4.0'da eklendi
+    'multi_ai_provider': True,      # v1.4.3'te eklendi
+    'dynamic_model_selection': True, # v1.4.3'te eklendi
+    'enhanced_documentation': True,  # v1.4.3'te eklendi
+    'token_usage_tracking': True,    # v1.4.3'te eklendi
+    'context_limit_management': True # v1.4.3'te eklendi
 }
 
 # Değişiklik özeti
 CHANGELOG_SUMMARY = {
+    '1.4.3': {
+        'date': '2025-01-08',
+        'type': 'enhancement',
+        'title': 'Gelişmiş AI Sağlayıcı Sistemi ve Kod Kalitesi',
+        'highlights': [
+            'Çoklu AI Sağlayıcı Desteği (OpenAI, Anthropic Claude, xAI Grok)',
+            'Dinamik model seçimi ve provider switching sistemi',
+            'Kapsamlı kod dokümantasyonu ve yorum satırları eklendi',
+            'AI analiz kalitesi artırma sistemleri (anti-hallucination)',
+            'Gelişmiş prompt engineering ve kısıt sistemleri',
+            'Provider-specific API parametre optimizasyonu',
+            'Token usage tracking ve context limit yönetimi',
+            'Sağlayıcı bazlı model listesi ve validasyon',
+            'Base URL konfigürasyonu (xAI için özel endpoint)',
+        ]
+    },
     '1.4.2': {
         'date': '2025-01-08',
         'type': 'quality',
@@ -126,6 +151,7 @@ CHANGELOG_SUMMARY = {
 
 def get_version_string():
     """Tam versiyon string'ini döndür"""
+    # Örnek: 1.4.2 (Build 142) veya 1.4.2-rc.142
     if VERSION_INFO['pre_release']:
         return f"{VERSION}-{VERSION_INFO['pre_release']}.{VERSION_INFO['build']}"
     return f"{VERSION} (Build {VERSION_INFO['build']})"
@@ -143,6 +169,7 @@ def get_version_info():
 
 def print_version_info():
     """Versiyon bilgilerini konsola yazdır"""
+    # CLI çıktısı: paket/uygulama bilgisini hızlıca gözlemlemek için
     print(f"Akıllı Üretim Günlüğü Asistanı")
     print(f"Versiyon: {get_version_string()}")
     print(f"Kod Adı: {VERSION_NAME}")
