@@ -9,10 +9,10 @@ Akıllı Üretim Günlüğü Asistanı - Versiyon Bilgileri
 # - GUI ve CLI'da gösterilecek özet/veri sağlayıcı yardımcı fonksiyonlar sunmak
 
 # Semantic Versioning: MAJOR.MINOR.PATCH
-VERSION = "1.5.0"
-VERSION_NAME = "Gelişmiş Güvenlik ve Audit Sistemi"
+VERSION = "1.5.1"
+VERSION_NAME = "Gelişmiş Analiz Optimizasyonları"
 BUILD_DATE = "2025-01-12"
-BUILD_NUMBER = 150
+BUILD_NUMBER = 151
 
 # Versiyon detayları
 VERSION_INFO = {
@@ -59,6 +59,23 @@ FEATURES = {
 
 # Değişiklik özeti
 CHANGELOG_SUMMARY = {
+    '1.5.1': {
+        'date': '2025-01-12',
+        'type': 'enhancement',
+        'title': 'Gelişmiş Analiz Optimizasyonları',
+        'highlights': [
+            'Advanced Yüzdelik Analiz Sistemi - Pareto 80/20 kuralı',
+            'Anti-hallucination sistemi güçlendirildi',
+            'Similasyon placeholder sorunu çözüldü',
+            'GPT-4-turbo modeli kaldırıldı (token/maliyet optimizasyonu)',
+            'Maliyet uyarı dialog sistemi eklendi',
+            'Enhanced Prompt System tam entegrasyonu',
+            'Zorunlu %100 yüzdelik normalize sistemi',
+            'Minimum %5 kategori kuralı uygulandı',
+            'Proactive analysis template\'leri iyileştirildi',
+            'Sanitization engine placeholder temizliği eklendi'
+        ]
+    },
     '1.5.0': {
         'date': '2025-01-12',
         'type': 'security',

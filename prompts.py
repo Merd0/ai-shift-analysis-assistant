@@ -159,7 +159,7 @@ Lütfen aşağıdaki yapıda ve profesyonel formatta, sadece istenen bölümleri
 ---
 
 ## 🔍 3. KÖK NEDEN ANALİZİ (COMPREHENSIVE ROOT CAUSE ANALYSIS)
-- **Sorun Kategorileri (18-24 kategori):** Detaylı % dağılım ve alt nedenler (tekrarsız, normalize Toplam=%100)
+- **🔢 ADVANCED YÜZDELİK ANALİZ:** Ana kategorileri %5+ dilimlerle göster. Minimum %5 altı "Diğer"e dahil. ZORUNLU: Yüzde toplamı tam %100 olmalı. Pareto analizi (80/20) ile kritik kategorileri belirle
 - **Tekrarlayan Arıza Analizi:** Sıklık, pattern ve kök nedenler
 - **Sistem Arızaları:** Mekanik, elektriksel, yazılımsal sorunlar
 - **İnsan Faktörü:** Operatör hataları, eğitim eksikleri
@@ -494,13 +494,182 @@ def test_prompts():
     print(f"🚀 Sistem hazır - v{PROMPT_VERSION}")
 
 
+# --------------------------------------------------------------------------------------------------
+# 🚀 ENHANCED PROMPT SYSTEM - Token Efficiency & Quality Optimization
+# --------------------------------------------------------------------------------------------------
+
+def create_enhanced_prompt(data_summary: str, model_name: str = "gpt-4o-mini", 
+                          min_executive_items: int = 15, max_executive_items: int = 20) -> str:
+    """
+    🚀 ENHANCED PROMPT SYSTEM v1.0
+    3 Ana Sorunu Çözen Akıllı Prompt Sistemi:
+    
+    1. ✅ MANDATORY ITEM COUNT - AI'ı belirtilen sayıda madde yazmaya zorlar
+    2. ✅ PROACTIVE ANALYSIS - "Veri yok" yerine çözüm algoritmaları önerir  
+    3. ✅ MODEL OPTIMIZATION - Farklı modeller için optimize edilmiş prompt'lar
+    """
+    
+    # Model-specific optimizations
+    if "mini" in model_name.lower():
+        # GPT-4o-mini için optimize edilmiş (test sonucu: en iyi performans)
+        executive_items = max_executive_items
+        prompt_style = "DETAILED"
+    elif "turbo" in model_name.lower():
+        # GPT-4-turbo için tam performans (maliyet uyarısı var, kullanıcı biliyor)
+        executive_items = max_executive_items  # Tam kapasite kullan
+        prompt_style = "DETAILED"  # Full sections
+    else:
+        # Diğer modeller için dengeli
+        executive_items = min_executive_items
+        prompt_style = "BALANCED"
+    
+    # Enhanced Executive Summary with Mandatory Item Count
+    enhanced_executive = f"""
+🚨 **ZORUNLU MADDE SAYISI: {executive_items} MADDE - EKSİK YASAK!**
+
+## 🎯 1. YÖNETİCİ ÖZETİ (EXECUTIVE SUMMARY)
+
+### **Kritik Bulgular ({executive_items} madde - ZORUNLU):**
+
+⚠️ DİKKAT: Tam {executive_items} madde yazılmazsa yanıt HATA olarak değerlendirilir!
+
+""" + "\n".join([f"{i}. **[Kritik Bulgu {i}]:** [Detaylı açıklama + veri dayanağı + etki analizi]" 
+                  for i in range(1, executive_items + 1)])
+
+    # Proactive Analysis Templates
+    proactive_templates = """
+
+🔍 **PROACTIVE ANALYSIS TEMPLATES:**
+
+**❌ KESINLIKLE YASAK İFADELER:**
+- "Similasyondan dolayı doldurulmamıştır"
+- "Veri eksikliği nedeniyle analiz yapılamadı"
+- "Bu analiz için yeterli veri yok"
+- "Simulasyon", "Simülasyon", "dolayı doldurulma" gibi belirsiz ifadeler
+- Boş maddeler, placeholder'lar, "..." kullanımı
+
+**✅ ZORUNLU REPLACEMENT TEMPLATE:**
+
+Her eksik/belirsiz durumda MUTLAKA şu yapıyı kullan:
+
+> **"📊 [Konu] analizi için mevcut verilerden şu tespitler yapıldı:**
+> 
+> 1. **Elimizdeki Bulgular:** [Veriyi maksimum kullan, pattern'leri göster]
+> 2. **İyileştirme Önerisi:** [Bu konuda nasıl daha iyi veri toplanabilir]
+> 3. **Hızlı Aksiyon:** [Şimdi yapılabilecek somut adımlar]"
+
+**🚨 SERT KURAL:** Hiçbir madde boş bırakılmaz! Her madde spesifik, actionable olmalı!
+
+"""
+
+    # Not: Sections artık enhanced_prompt'ta full template olarak tanımlanmış
+
+    # Final enhanced prompt construction - FULL TEMPLATE SYSTEM
+    enhanced_prompt = f"""
+{SYSTEM_PROMPT}
+
+Aşağıda çimento fabrikasının son vardiya verilerine ait özet bilgileri paylaşıyorum.
+Lütfen bu verileri analiz ederek, sistem talimatlarında belirtilen kurallara uygun, aşağıdaki bölümleri içeren bir iş zekası raporu hazırla.
+
+**--- ANALİZ EDİLECEK VERİ ÖZETİ ---**
+{data_summary}
+**--- VERİ ÖZETİ SONU ---**
+
+{proactive_templates}
+
+---
+
+# 🏭 VARDİYA VERİLERİ KAPSAMLI İŞ ZEKASI RAPORU
+
+---
+
+{enhanced_executive}
+
+---
+
+## 📊 2. DETAYLI PERFORMANS KARNESİ (ADVANCED KPI DASHBOARD)
+- **Genel Verimlilik Analizi:** (Yalnızca veri varsa) OEE, kullanılabilirlik, performans, kalite oranları
+- **Ekipman Performans Matrisi:** En sorunlu 5-10 ekipman (adet ve %), normalize toplam
+- **MTBF/MTTR Analizi:** SADECE veri uygunsa. Uygun değilse: "MTBF/MTTR: veri yok (başlangıç-bitiş/tarih sütunları eksik)"
+- **Pareto Analizi:** 80/20; ana nedenlerin kümülatif %'si (Toplam %100)
+- **Vardiya Karşılaştırması:** Gece/gündüz vb. (veri varsa)
+- **Trend Katsayıları:** İyileşme/kötüleşme oranları (veri varsa)
+
+---
+
+## 🔍 3. KÖK NEDEN ANALİZİ (COMPREHENSIVE ROOT CAUSE ANALYSIS)
+- **🔢 ADVANCED YÜZDELİK ANALİZ:** Ana kategorileri %5+ dilimlerle göster. Minimum %5 altı "Diğer"e dahil. ZORUNLU: Yüzde toplamı tam %100 olmalı. Pareto analizi (80/20) ile kritik kategorileri belirle
+- **Tekrarlayan Arıza Analizi:** Sıklık, pattern ve kök nedenler
+- **Sistem Arızaları:** Mekanik, elektriksel, yazılımsal sorunlar
+- **İnsan Faktörü:** Operatör hataları, eğitim eksikleri
+- **Çevresel Faktörler:** Sıcaklık, nem, titreşim etkileri
+- **Bakım Eksikleri:** Planlı/plansız bakım analizi
+- **Gizli Bulgular (12-18 madde):** Veri madenciliği ile bulunan ilişkiler (veriyle doğrulanmış)
+
+---
+
+## 📈 4. ZAMAN SERİSİ ANALİZİ VE RİSK MODELLEMESİ
+- **Haftalık/Aylık Trendler:** Detaylı zaman serisi grafikleri
+- **Mevsimsel Etkiler:** Yıl içindeki değişimler
+- **Korelasyon Analizi:** Değişkenler arası ilişkiler
+- **Risk Projeksiyonu:** 3-6-12 aylık tahminler
+- **Kritik Eşik Analizi:** Hangi noktada acil müdahale gerekli
+- **Erken Uyarı Sistemleri:** Öncü göstergeler
+
+---
+
+## 💡 5. KAPSAMLI SMART+ EYLEM PLANI (DİNAMİK — GÜNCELLİK ODAKLI)
+**ZORUNLU: Her kategoriden en az 2 öneri olmalı**
+
+### 🚨 ACİL EYLEMLER (0-7 gün) (dinamik adet):
+1. **[Öneri 1]:** Spesifik aksiyon + kaynak + sorumlu
+2. **[Öneri 2]:** Spesifik aksiyon + kaynak + sorumlu
+3. **[Öneri 3]:** Spesifik aksiyon + kaynak + sorumlu
+
+### ⚡ KISA VADELİ (1-30 gün) (dinamik adet):
+4. **[Öneri 4]:** Detaylı plan + kaynak ihtiyacı + hedef
+5. **[Öneri 5]:** Detaylı plan + kaynak ihtiyacı + hedef
+6. **[Öneri 6]:** Detaylı plan + kaynak ihtiyacı + hedef
+
+### 📈 ORTA VADELİ (1-3 ay) (dinamik adet):
+7. **[Öneri 7]:** Uygulama adımları + operasyonel etki + timeline
+8. **[Öneri 8]:** Uygulama adımları + operasyonel etki + timeline
+
+### 🎯 UZUN VADELİ (3+ ay) (dinamik adet):
+9. **[Öneri 9]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
+10. **[Öneri 10]:** Stratejik plan + kaynak ihtiyacı + beklenen sonuç
+
+**Her öneri için mutlaka belirt:**
+- Öncelik seviyesi (1-10)
+- Teknik zorluğu (Kolay/Orta/Zor)
+- Uygulama süresi (gün)
+- Sorumlu departman
+- Başarı metriği (ölçülebilir)
+
+---
+
+## 📊 6. YÖNETİCİ AKSIYON PANOSU
+- **Kritik Kararlar:** Yönetimin alması gereken stratejik kararlar
+- **Bütçe Önerileri:** Yatırım ve maliyet optimizasyon önerileri
+- **KPI Hedefleri:** Gelecek dönem için hedef değerler
+- **Risk Matrisi:** Risk seviyesi ve aciliyet sıralaması
+
+⚠️ **SON UYARI:** 
+- {executive_items} maddelik Executive Summary ZORUNLU! TÜM bölümleri eksiksiz yaz!
+- "Similasyondan dolayı doldurulmamıştır" gibi placeholder ifadeler KESINLIKLE YASAK!
+- Her madde spesifik, actionable, veri-dayanaklı olmalı!
+"""
+
+    return enhanced_prompt
+
 def get_prompt_info():
     """Prompt bilgilerini döndür"""
     return {
         "version": PROMPT_VERSION,
         "last_update": LAST_UPDATE,
         "features": FEATURES,
-        "performance": PERFORMANCE_METRICS
+        "performance": PERFORMANCE_METRICS,
+        "enhanced_system": True  # ✅ Enhanced system aktif
     }
 
 

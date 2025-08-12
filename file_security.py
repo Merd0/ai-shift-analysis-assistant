@@ -58,7 +58,7 @@ class SecureFileValidator:
         # python-magic kütüphanesi mevcut mu?
         self.magic_available = False
         try:
-            import magic
+            import magic  # type: ignore
             self.magic_available = True
             print("🔍 Magic number detection: Aktif")
         except ImportError:
@@ -235,7 +235,7 @@ class SecureFileValidator:
             # python-magic ile daha detaylı kontrol
             if self.magic_available:
                 try:
-                    import magic
+                    import magic  # type: ignore
                     file_type = magic.from_file(file_path, mime=True)
                     excel_mime_types = [
                         'application/vnd.ms-excel',
@@ -245,7 +245,7 @@ class SecureFileValidator:
                     if file_type not in excel_mime_types:
                         return False, f"Magic number Excel formatı değil: {file_type}"
                         
-                except Exception:
+                except (ImportError, Exception):
                     pass  # Magic kontrol başarısız olursa devam et
             
             return False, f"Bilinmeyen dosya imzası: {header[:8].hex()}"

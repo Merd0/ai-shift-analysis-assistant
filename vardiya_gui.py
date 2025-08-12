@@ -220,14 +220,40 @@ class VardiyaGUI:
             # Seçilen sağlayıcıya göre model listesini dinamik güncelle
             try:
                 from config import PROVIDERS
-                models = PROVIDERS.get(provider, {}).get('models', [])
-                model_combo['values'] = models if models else [self.model_var.get()]
-                if models:
-                    self.model_var.set(models[0])
-            except Exception:
+                models_raw = PROVIDERS.get(provider, {}).get('models', [])
+                
+                # Model formatını normalize et (dict veya string)
+                model_names = []
+                for model in models_raw:
+                    if isinstance(model, dict):
+                        model_names.append(model.get('name', str(model)))
+                    else:
+                        model_names.append(str(model))
+                
+                model_combo['values'] = model_names if model_names else [self.model_var.get()]
+                if model_names:
+                    self.model_var.set(model_names[0])
+            except Exception as e:
+                print(f"Refresh models error: {e}")
                 pass
 
         self.provider_var.trace_add('write', lambda *_: refresh_models())
+        
+        # Model değiştiğinde maliyet uyarısı kontrol et
+        def check_cost_warning(*args):
+            """Model değiştiğinde maliyet uyarısı göster"""
+            try:
+                from config import should_show_cost_warning
+                provider = self.provider_var.get()
+                model = self.model_var.get()
+                
+                should_warn, warning_message = should_show_cost_warning(provider, model)
+                if should_warn:
+                    self._show_cost_warning_dialog(warning_message, model)
+            except Exception as e:
+                print(f"Cost warning error: {e}")
+        
+        self.model_var.trace_add('write', check_cost_warning)
         refresh_models()
         
         api_frame.columnconfigure(1, weight=1)
@@ -1296,6 +1322,69 @@ class VardiyaGUI:
                 log_method(*args, **kwargs)
         except Exception:
             pass  # Loglama hatası uygulamayı durdurmaz
+
+    def _show_cost_warning_dialog(self, warning_message: str, model_name: str):
+        """💰 Maliyet uyarı dialogu göster"""
+        try:
+            import tkinter.messagebox as msgbox
+            from config import get_model_info
+            
+            provider = self.provider_var.get()
+            model_info = get_model_info(provider, model_name)
+            
+            # Detaylı bilgi mesajı oluştur
+            full_message = f"""{warning_message}
+
+📊 MODEL BİLGİLERİ:
+• Performans: {model_info.get('performance', 'Bilinmiyor')}
+• Hız: {model_info.get('speed', 'Bilinmiyor')}
+• Kalite: {model_info.get('quality', 'Bilinmiyor')}
+• Önerilen: {'✅ Evet' if model_info.get('recommended', False) else '❌ Hayır'}
+
+🔍 NOTLAR:
+{model_info.get('notes', 'Ek bilgi yok')}
+
+❓ Yine de bu modeli kullanmak istiyor musunuz?"""
+            
+            # Kullanıcıdan onay al
+            result = msgbox.askyesno(
+                "💰 Model Maliyet Uyarısı",
+                full_message,
+                icon="warning"
+            )
+            
+            # İptal ederse önerilen modele geç
+            if not result:
+                self._switch_to_recommended_model(provider)
+                
+            # Audit log
+            self._log_safe('log_user_action', 
+                         'COST_WARNING', 
+                         f"Model: {model_name}, Onay: {'Evet' if result else 'Hayır'}")
+                
+        except Exception as e:
+            print(f"Cost warning dialog error: {e}")
+
+    def _switch_to_recommended_model(self, provider: str):
+        """Önerilen modele geç"""
+        try:
+            from config import get_recommended_models
+            recommended = get_recommended_models()
+            
+            # Bu provider için önerilen model bul
+            for model_info in recommended:
+                if model_info['provider'] == provider:
+                    self.model_var.set(model_info['model'])
+                    print(f"✅ {model_info['label']} modeline geçildi (önerilen)")
+                    return
+            
+            # Önerilen bulunamazsa GPT-4o-mini'ye geç (güvenli default)
+            if provider == 'openai':
+                self.model_var.set('gpt-4o-mini')
+                print("✅ GPT-4o Mini modeline geçildi (güvenli default)")
+                
+        except Exception as e:
+            print(f"Recommended model switch error: {e}")
 
 def main():
     """Ana fonksiyon"""
