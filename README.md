@@ -1,26 +1,39 @@
 # Akıllı Üretim Günlüğü Asistanı
 
-**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.5.0 - Gelişmiş Güvenlik ve Audit Sistemi**
+**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.5.1 - Gelişmiş Analiz Optimizasyonları**
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.1-blue.svg)](CHANGELOG.md)
 [![Security](https://img.shields.io/badge/security-enterprise--grade-darkgreen.svg)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](requirements.txt)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Bu sistem, SoftExpert'ten alınan vardiya defteri kayıtlarını analiz edip günün özeti, sorunlar ve çözümleri gibi ana noktaları listeler. Kişisel verileri otomatik olarak temizleyerek KVKK uyumluluğu sağlar.
 
-## v1.5.0 – 🔒 **GÜVENLİK VE AUDİT SİSTEMİ**
+## v1.5.1 – 📊 **GELİŞMİŞ ANALİZ OPTİMİZASYONLARI**
 
-- **🛡️ Enterprise-Grade Security** - Kapsamlı güvenlik altyapısı
-- **📝 Security Audit Logging** - Tüm işlemlerin JSON formatında loglanması
-- **🔍 File Security Validation** - Magic number ve dosya imzası kontrolü
-- **🚫 Malware Protection** - Zararlı dosya tespit ve engelleme
-- **🛤️ Path Traversal Protection** - Güvenli dosya yolu kontrolü
-- **📊 Session Tracking** - Kullanıcı aktivite izleme sistemi
-- **🔄 Log Rotation** - Otomatik günlük log dosyası döngüsü
-- **🗂️ Structured Logging** - JSON formatında audit trail
-- **📏 File Size Controls** - Dosya boyutu ve güvenlik limitleri
-- **💾 Secure Data Processing** - Güvenli veri işleme altyapısı
+- **🔢 Advanced Yüzdelik Analiz Sistemi** - Pareto 80/20 kuralı entegrasyonu
+- **💰 Maliyet Uyarı Dialog Sistemi** - Pahalı model seçimi uyarı ve alternatifleri
+- **🚫 Anti-Hallucination Güçlendirme** - Similasyon placeholder engelleme
+- **🎯 Enhanced Prompt System** - Model-specific optimizasyon entegrasyonu
+- **📐 Zorunlu %100 Normalize** - Yüzdelik dağılımların kesin toplamı
+- **🔧 Minimum %5 Kategori Kuralı** - Küçük kategorilerin "Diğer"e dahil edilmesi
+- **🧹 Gelişmiş Sanitization** - Placeholder ve belirsiz ifade temizliği
+- **⚡ GPT-4-turbo Kaldırma** - Token/maliyet optimizasyonu
+- **📋 Proactive Analysis Template** - "Veri yok" yerine çözüm önerisi sistemi
+- **🎪 Pattern & Trend Analizi** - Zaman korelasyonu ve ekipman clustering
+
+## v1.5.0 – Güvenlik ve Audit Sistemi
+
+- Enterprise-Grade Security - Kapsamlı güvenlik altyapısı
+- Security Audit Logging - Tüm işlemlerin JSON formatında loglanması
+- File Security Validation - Magic number ve dosya imzası kontrolü
+- Malware Protection - Zararlı dosya tespit ve engelleme
+- Path Traversal Protection - Güvenli dosya yolu kontrolü
+- Session Tracking - Kullanıcı aktivite izleme sistemi
+- Log Rotation - Otomatik günlük log dosyası döngüsü
+- Structured Logging - JSON formatında audit trail
+- File Size Controls - Dosya boyutu ve güvenlik limitleri
+- Secure Data Processing - Güvenli veri işleme altyapısı
 
 ## v1.4.3 – AI Sağlayıcı Sistemi
 
