@@ -9,16 +9,16 @@ Akıllı Üretim Günlüğü Asistanı - Versiyon Bilgileri
 # - GUI ve CLI'da gösterilecek özet/veri sağlayıcı yardımcı fonksiyonlar sunmak
 
 # Semantic Versioning: MAJOR.MINOR.PATCH
-VERSION = "1.4.3"
-VERSION_NAME = "Gelişmiş AI Sağlayıcı Sistemi ve Kod Kalitesi"
-BUILD_DATE = "2025-01-08"
-BUILD_NUMBER = 143
+VERSION = "1.5.0"
+VERSION_NAME = "Gelişmiş Güvenlik ve Audit Sistemi"
+BUILD_DATE = "2025-01-12"
+BUILD_NUMBER = 150
 
 # Versiyon detayları
 VERSION_INFO = {
     'major': 1,
-    'minor': 4, 
-    'patch': 3,
+    'minor': 5, 
+    'patch': 0,
     'pre_release': None,  # alpha, beta, rc
     'build': BUILD_NUMBER
 }
@@ -46,11 +46,36 @@ FEATURES = {
     'dynamic_model_selection': True, # v1.4.3'te eklendi
     'enhanced_documentation': True,  # v1.4.3'te eklendi
     'token_usage_tracking': True,    # v1.4.3'te eklendi
-    'context_limit_management': True # v1.4.3'te eklendi
+    'context_limit_management': True, # v1.4.3'te eklendi
+    'security_audit_logging': True,   # v1.5.0'da eklendi
+    'file_security_validation': True, # v1.5.0'da eklendi
+    'secure_file_processing': True,   # v1.5.0'da eklendi
+    'comprehensive_audit_trail': True, # v1.5.0'da eklendi
+    'session_tracking': True,         # v1.5.0'da eklendi
+    'malware_protection': True,       # v1.5.0'da eklendi
+    'path_traversal_protection': True, # v1.5.0'da eklendi
+    'file_integrity_validation': True # v1.5.0'da eklendi
 }
 
 # Değişiklik özeti
 CHANGELOG_SUMMARY = {
+    '1.5.0': {
+        'date': '2025-01-12',
+        'type': 'security',
+        'title': 'Gelişmiş Güvenlik ve Audit Sistemi',
+        'highlights': [
+            'Kapsamlı Security Audit Logging sistemi eklendi',
+            'Dosya güvenlik validation ve malware koruması',
+            'Path traversal ve file injection saldırı koruması',
+            'Magic number file signature doğrulaması',
+            'Session tracking ve kullanıcı aktivite izleme',
+            'JSON formatında yapılandırılmış audit log\'ları',
+            'Otomatik log rotasyonu ve güvenli saklama',
+            'File integrity validation ve boyut kontrolleri',
+            'Comprehensive security event monitoring',
+            'Güvenli dosya işleme altyapısı'
+        ]
+    },
     '1.4.3': {
         'date': '2025-01-08',
         'type': 'enhancement',

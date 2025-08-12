@@ -17,8 +17,13 @@ import os
 import shutil
 from datetime import datetime, timedelta
 import threading
+import traceback
 from excel_analyzer import ExcelAnalyzer, KVKKDataCleaner
 from version import get_version_string, VERSION_NAME
+
+# Güvenlik modülleri
+from security_audit import SecurityAuditLogger
+from file_security import SecureFileValidator, validate_excel_file
 
 class VardiyaGUI:
     def __init__(self):
@@ -40,6 +45,9 @@ class VardiyaGUI:
         # Çıktı klasörlerini hazırla ve çalışma alanını arşivle
         # artifacts/{pdf,excel} klasörlerini oluşturur; kök dizindeki eski çıktıları taşır
         self._setup_artifacts()
+        
+        # 🔐 Güvenlik sistemlerini başlat
+        self._setup_security()
         
         # Analyzer'ı başlat
         self.analyzer = ExcelAnalyzer()
@@ -345,23 +353,83 @@ class VardiyaGUI:
         self.report_preview.pack(fill='both', expand=True)
         
     def select_file(self):
-        """Excel dosyası seç"""
-        # Kullanıcıdan dosya yolu al ve etikete yaz
+        """Excel dosyası seç - 🔒 Güvenlik Kontrollü"""
+        # Kullanıcı eylemini logla
+        self._log_safe(self.audit_logger.log_user_action, "FILE_SELECT_START", "Dosya seçimi başlatıldı")
+        
+        # Kullanıcıdan dosya yolu al (Güvenlik: "All files" kaldırıldı)
         file_path = filedialog.askopenfilename(
             title="Excel Dosyası Seç",
-            filetypes=[("Excel files", "*.xlsx *.xls"), ("All files", "*.*")]
+            filetypes=[("Excel files", "*.xlsx *.xls")]  # All files kaldırıldı
         )
         
         if file_path:
+            # 🔒 DOSYA GÜVENLİK KONTROLÜ
+            if self.file_validator:
+                is_valid, message, details = self.file_validator.validate_file(file_path, detailed_check=True)
+                
+                # Güvenlik olayını logla
+                self._log_safe(
+                    self.audit_logger.log_security_event,
+                    "FILE_VALIDATION",
+                    "HIGH" if not is_valid else "LOW",
+                    f"Dosya doğrulama: {message}"
+                )
+                
+                if not is_valid:
+                    # Güvenlik riski - dosyayı reddet
+                    messagebox.showerror(
+                        "Güvenlik Hatası",
+                        f"Dosya güvenlik kontrolünden geçmedi:\n\n{message}\n\nLütfen geçerli bir Excel dosyası seçin."
+                    )
+                    self._log_safe(
+                        self.audit_logger.log_file_operation,
+                        "FILE_REJECTED", file_path, False, message
+                    )
+                    return
+                
+                # Güvenlik uyarıları varsa bilgilendir
+                if details.get('warnings'):
+                    warning_msg = "\n".join(details['warnings'])
+                    messagebox.showwarning(
+                        "Güvenlik Uyarısı",
+                        f"Dosya kabul edildi ancak dikkat:\n\n{warning_msg}\n\nDevam etmek istiyor musunuz?"
+                    )
+            
+            # Güvenlik kontrollerinden geçti
             self.current_file = file_path
             self.file_label.config(text=os.path.basename(file_path))
             
+            # Başarılı dosya seçimini logla
+            self._log_safe(
+                self.audit_logger.log_file_operation,
+                "FILE_SELECTED", file_path, True, f"Güvenlik kontrolleri geçti: {message if self.file_validator else 'Validator yok'}"
+            )
+            
+            print(f"✅ Dosya seçildi: {os.path.basename(file_path)}")
+        else:
+            # Kullanıcı iptal etti
+            self._log_safe(self.audit_logger.log_user_action, "FILE_SELECT_CANCELLED", "Dosya seçimi iptal edildi")
+            
     def analyze_file(self):
-        """Seçilen dosyayı analiz et"""
+        """Seçilen dosyayı analiz et - 🔒 Güvenlik Kontrollü"""
         # Akış: UI temizlik → Analyze → Sonuçları yazdır → Temiz veriyi tut
         if not hasattr(self, 'current_file'):
+            # Güvenlik olayı: Dosya seçilmeden analiz çağrıldı
+            self._log_safe(
+                self.audit_logger.log_security_event,
+                "INVALID_OPERATION",
+                "MEDIUM",
+                "Dosya analizi dosya seçilmeden çağrıldı"
+            )
             messagebox.showerror("Hata", "Lütfen önce bir Excel dosyası seçin!")
             return
+        
+        # Analiz başlangıcını logla
+        self._log_safe(
+            self.audit_logger.log_file_operation,
+            "ANALYZE_START", self.current_file, True, "Dosya analizi başlatıldı"
+        )
         
         try:
             # Progress göster
@@ -373,7 +441,13 @@ class VardiyaGUI:
             self.analysis_results = self.analyzer.analyze_excel_file(self.current_file)
             
             if 'hata' in self.analysis_results:
-                messagebox.showerror("Hata", f"Analiz hatası: {self.analysis_results['hata']}")
+                # Analiz hatası logla
+                error_msg = self.analysis_results['hata']
+                self._log_safe(
+                    self.audit_logger.log_file_operation,
+                    "ANALYZE_FAILED", self.current_file, False, error_msg
+                )
+                messagebox.showerror("Hata", f"Analiz hatası: {error_msg}")
                 return
             
             # Sonuçları göster
@@ -382,8 +456,28 @@ class VardiyaGUI:
             # Temizlenmiş veriyi sakla
             self.current_data = self.analysis_results.get('temiz_veri')
             
+            # Başarılı analizi logla
+            row_count = len(self.current_data) if self.current_data is not None else 0
+            self._log_safe(
+                self.audit_logger.log_file_operation,
+                "ANALYZE_SUCCESS", self.current_file, True, f"Analiz tamamlandı: {row_count:,} satır"
+            )
+            
+            print(f"✅ Analiz tamamlandı: {row_count:,} satır")
+            
         except Exception as e:
-            messagebox.showerror("Hata", f"Beklenmeyen hata: {str(e)}")
+            # Beklenmeyen hata - tam stack trace ile logla
+            error_msg = str(e)
+            stack_trace = traceback.format_exc()
+            
+            self._log_safe(
+                self.audit_logger.log_error,
+                "ANALYZE_EXCEPTION", error_msg, f"Dosya: {self.current_file}", True
+            )
+            
+            messagebox.showerror("Hata", f"Beklenmeyen hata: {error_msg}")
+            print(f"❌ Analiz hatası: {error_msg}")
+            print(f"Stack trace: {stack_trace}")
     
     def display_analysis_results(self):
         """Analiz sonuçlarını göster"""
@@ -531,8 +625,18 @@ class VardiyaGUI:
         threading.Thread(target=self.run_ai_analysis, args=(api_key,), daemon=True).start()
     
     def run_ai_analysis(self, api_key):
-        """AI analizini çalıştır (thread'de) - Yeni Gelişmiş Sistem"""
+        """AI analizini çalıştır (thread'de) - 🔒 Güvenlik Kontrollü"""
         # Seçenekleri topla → CimentoVardiyaAI ile analiz çağrısı → UI'ye sonucu yaz
+        
+        # AI analiz başlangıcını logla
+        provider = self.provider_var.get()
+        model = self.model_var.get()
+        
+        self._log_safe(
+            self.audit_logger.log_api_call,
+            provider, model, False, {}, ""  # Henüz başarısız, token bilgisi yok
+        )
+        
         try:
             # Yeni AI analyzer'ı import et
             from ai_analyzer import CimentoVardiyaAI
@@ -554,14 +658,17 @@ class VardiyaGUI:
 
             ai_system = CimentoVardiyaAI(
                 api_key=api_key,
-                provider=self.provider_var.get(),
-                model=self.model_var.get(),
+                provider=provider,
+                model=model,
                 max_tokens=max_tokens,
                 temperature=temperature
             )
             
             # Analiz edilecek veriyi hazırla
             data_to_analyze = getattr(self, 'filtered_data', self.current_data)
+            data_rows = len(data_to_analyze) if data_to_analyze is not None else 0
+            
+            print(f"🤖 AI analizi başlatıldı: {provider}/{model} - {data_rows:,} satır")
             
             # Seçili analiz türlerini al ve formatla
             selected_analyses = []
@@ -593,6 +700,14 @@ class VardiyaGUI:
                 user_question=""
             )
             
+            # Token kullanımını logla
+            token_usage = analysis_result.get('token_usage', {}) if analysis_result else {}
+            
+            self._log_safe(
+                self.audit_logger.log_api_call,
+                provider, model, True, token_usage, ""
+            )
+            
             # Analiz sonucunu al
             if analysis_result and 'raw_response' in analysis_result:
                 result = analysis_result['raw_response']
@@ -603,11 +718,29 @@ class VardiyaGUI:
             else:
                 result = str(analysis_result)
             
+            print(f"✅ AI analizi tamamlandı: {len(result)} karakter yanıt")
+            
             # Sonucu GUI'de göster
             self.window.after(0, self.display_ai_result, result)
             
         except Exception as e:
-            self.window.after(0, self.display_ai_error, str(e))
+            # Hata detaylarını logla
+            error_msg = str(e)
+            stack_trace = traceback.format_exc()
+            
+            self._log_safe(
+                self.audit_logger.log_api_call,
+                provider, model, False, {}, error_msg
+            )
+            
+            self._log_safe(
+                self.audit_logger.log_error,
+                "AI_ANALYSIS_EXCEPTION", error_msg, f"Provider: {provider}, Model: {model}", True
+            )
+            
+            print(f"❌ AI analizi hatası: {error_msg}")
+            self.window.after(0, self.display_ai_error, error_msg)
+            
         finally:
             self.window.after(0, self.progress.stop)
     
@@ -635,8 +768,15 @@ class VardiyaGUI:
         messagebox.showerror("AI Hatası", f"AI analizi başarısız: {error}")
     
     def export_pdf(self):
-        """PDF rapor export et"""
+        """PDF rapor export et - 🔒 Güvenlik Kontrollü"""
         # ReportLab ile sade PDF üretimi; başlık, tarih ve metin blokları
+        
+        # Export başlangıcını logla
+        self._log_safe(
+            self.audit_logger.log_user_action,
+            "PDF_EXPORT_START", "PDF rapor export işlemi başlatıldı"
+        )
+        
         try:
             from reportlab.lib.pagesizes import A4
             from reportlab.lib.styles import getSampleStyleSheet
@@ -725,16 +865,48 @@ class VardiyaGUI:
                 story.append(Paragraph('— Rapor Sonu —', styles['Italic']))
                 
                 doc.build(story)
+                
+                # Başarılı export'u logla
+                self._log_safe(
+                    self.audit_logger.log_export_operation,
+                    "PDF", file_path, True, f"PDF başarıyla oluşturuldu"
+                )
+                
                 messagebox.showinfo("Başarılı", f"PDF rapor kaydedildi:\n{file_path}")
+                print(f"✅ PDF export başarılı: {os.path.basename(file_path)}")
                 
         except ImportError as e:
-            messagebox.showerror("Hata", f"PDF export için kütüphane hatası:\n{str(e)}\n\nKurulum: pip install reportlab")
+            error_msg = f"PDF export için kütüphane hatası: {str(e)}"
+            self._log_safe(
+                self.audit_logger.log_error,
+                "PDF_EXPORT_IMPORT_ERROR", error_msg, "ReportLab kütüphanesi eksik", False
+            )
+            messagebox.showerror("Hata", f"{error_msg}\n\nKurulum: pip install reportlab")
+            print(f"❌ PDF export hatası: {error_msg}")
+            
         except Exception as e:
-            messagebox.showerror("Hata", f"PDF export hatası:\n{str(e)}")
+            error_msg = str(e)
+            self._log_safe(
+                self.audit_logger.log_export_operation,
+                "PDF", "", False, error_msg
+            )
+            self._log_safe(
+                self.audit_logger.log_error,
+                "PDF_EXPORT_ERROR", error_msg, "PDF oluşturma hatası", True
+            )
+            messagebox.showerror("Hata", f"PDF export hatası:\n{error_msg}")
+            print(f"❌ PDF export hatası: {error_msg}")
     
     def export_excel(self):
-        """Excel rapor export et - AI analiz sonuçlarını içerir"""
+        """Excel rapor export et - 🔒 Güvenlik Kontrollü"""
         # OpenPyXL ile çok satırlı metni sığdıracak şekilde hücreleri sarar ve stiller uygular
+        
+        # Export başlangıcını logla
+        self._log_safe(
+            self.audit_logger.log_user_action,
+            "EXCEL_EXPORT_START", "Excel rapor export işlemi başlatıldı"
+        )
+        
         # AI rapor içeriğini kontrol et
         ai_report = self.ai_result_text.get(1.0, tk.END).strip()
         
@@ -880,13 +1052,34 @@ class VardiyaGUI:
                 # Ham veri sekmesi kaldırıldı - Sadece AI raporu export edilir
                 
                 wb.save(file_path)
+                
+                # Başarılı export'u logla
+                self._log_safe(
+                    self.audit_logger.log_export_operation,
+                    "EXCEL", file_path, True, f"Excel başarıyla oluşturuldu"
+                )
+                
                 messagebox.showinfo("Başarılı", f"AI Analiz Raporu kaydedildi: {file_path}")
+                print(f"✅ Excel export başarılı: {os.path.basename(file_path)}")
                 
             except Exception as e:
-                print(f"❌ Excel Export Hatası: {str(e)}")
-                import traceback
+                error_msg = str(e)
+                stack_trace = traceback.format_exc()
+                
+                # Hatalı export'u logla
+                self._log_safe(
+                    self.audit_logger.log_export_operation,
+                    "EXCEL", "", False, error_msg
+                )
+                self._log_safe(
+                    self.audit_logger.log_error,
+                    "EXCEL_EXPORT_ERROR", error_msg, "Excel oluşturma hatası", True
+                )
+                
+                print(f"❌ Excel Export Hatası: {error_msg}")
                 traceback.print_exc()
-                messagebox.showerror("Hata", f"Excel export hatası:\n{str(e)}\n\nDetaylı hata terminalde gösterildi.")
+                messagebox.showerror("Hata", f"Excel export hatası:\n{error_msg}\n\nDetaylı hata terminalde gösterildi.")
+                print(f"❌ Excel export hatası: {error_msg}")
     
     def export_word(self):
         """Word rapor export et"""
@@ -1001,8 +1194,30 @@ class VardiyaGUI:
         footer_label.pack()
     
     def run(self):
-        """Uygulamayı çalıştır"""
-        self.window.mainloop()
+        """Uygulamayı çalıştır - 🔒 Güvenlik Kontrollü"""
+        try:
+            # Uygulama hazır logla
+            self._log_safe(
+                self.audit_logger.log_user_action,
+                "APP_READY", "GUI hazır ve çalışıyor"
+            )
+            
+            # Ana döngü başlat
+            self.window.mainloop()
+            
+        finally:
+            # Uygulama kapanışını logla
+            self._log_safe(
+                self.audit_logger.log_user_action,
+                "APP_SHUTDOWN", "Uygulama kapatıldı"
+            )
+            
+            # Audit logger'ı temiz kapat
+            if self.audit_logger:
+                try:
+                    self.audit_logger.close()
+                except:
+                    pass
 
     # ---------------------- Yardımcılar: Çıktı arşivleme ----------------------
     def _setup_artifacts(self):
@@ -1054,6 +1269,33 @@ class VardiyaGUI:
                     pass
         except Exception:
             pass
+    
+    # ---------------------- Güvenlik Sistemi ----------------------
+    def _setup_security(self):
+        """Güvenlik sistemlerini başlat"""
+        try:
+            # Audit Logger başlat
+            self.audit_logger = SecurityAuditLogger()
+            
+            # Dosya güvenlik validator başlat 
+            self.file_validator = SecureFileValidator()
+            
+            # Uygulama başlatma logla
+            self.audit_logger.log_user_action("APP_LAUNCH", "GUI başlatıldı")
+            
+        except Exception as e:
+            # Güvenlik sistemi başlatılamadıysa uyar ama çökme
+            print(f"⚠️ Güvenlik sistemi başlatılamadı: {str(e)}")
+            self.audit_logger = None
+            self.file_validator = None
+    
+    def _log_safe(self, log_method, *args, **kwargs):
+        """Güvenli loglama - audit logger yoksa sessizce geç"""
+        try:
+            if self.audit_logger:
+                log_method(*args, **kwargs)
+        except Exception:
+            pass  # Loglama hatası uygulamayı durdurmaz
 
 def main():
     """Ana fonksiyon"""

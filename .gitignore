@@ -24,6 +24,17 @@ __pycache__/
 
 # OS
 .DS_Store
-Thumbs.dbartifacts/ 
+Thumbs.db
+
+# Output directories
+artifacts/ 
 cleaned_data/ 
 backup_*/ 
+
+# Security logs
+logs/
+*.log
+
+# Temporary files
+temp/
+tmp/

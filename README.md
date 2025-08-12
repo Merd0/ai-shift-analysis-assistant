@@ -1,34 +1,47 @@
 # Akıllı Üretim Günlüğü Asistanı
 
-**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.4.3 - Gelişmiş AI Sağlayıcı Sistemi ve Kod Kalitesi**
+**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.5.0 - Gelişmiş Güvenlik ve Audit Sistemi**
 
-[![Version](https://img.shields.io/badge/version-1.4.3-blue.svg)](CHANGELOG.md)
-[![Security](https://img.shields.io/badge/security-enhanced-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](CHANGELOG.md)
+[![Security](https://img.shields.io/badge/security-enterprise--grade-darkgreen.svg)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](requirements.txt)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Bu sistem, SoftExpert'ten alınan vardiya defteri kayıtlarını analiz edip günün özeti, sorunlar ve çözümleri gibi ana noktaları listeler. Kişisel verileri otomatik olarak temizleyerek KVKK uyumluluğu sağlar.
 
-## v1.4.3 – Öne Çıkanlar
+## v1.5.0 – 🔒 **GÜVENLİK VE AUDİT SİSTEMİ**
 
-- **🤖 Çoklu AI Sağlayıcı Desteği** - OpenAI, Anthropic Claude, xAI Grok
-- **⚙️ Dinamik Model Seçimi** - Provider switching ve model dropdown sistemi
-- **📝 Kapsamlı Kod Dokümantasyonu** - Detaylı yorum satırları eklendi
-- **🎯 AI Analiz Kalitesi Artırma** - Anti-hallucination sistemleri
-- **🔧 Gelişmiş Prompt Engineering** - Kısıt sistemleri ve optimizasyon
-- **📊 Token Usage Tracking** - API kullanım izleme ve raporlama
-- **🔗 Base URL Konfigürasyonu** - xAI için özel endpoint desteği
-- **⚡ Provider-Specific Optimizasyon** - Sağlayıcı bazlı parametre ayarları
+- **🛡️ Enterprise-Grade Security** - Kapsamlı güvenlik altyapısı
+- **📝 Security Audit Logging** - Tüm işlemlerin JSON formatında loglanması
+- **🔍 File Security Validation** - Magic number ve dosya imzası kontrolü
+- **🚫 Malware Protection** - Zararlı dosya tespit ve engelleme
+- **🛤️ Path Traversal Protection** - Güvenli dosya yolu kontrolü
+- **📊 Session Tracking** - Kullanıcı aktivite izleme sistemi
+- **🔄 Log Rotation** - Otomatik günlük log dosyası döngüsü
+- **🗂️ Structured Logging** - JSON formatında audit trail
+- **📏 File Size Controls** - Dosya boyutu ve güvenlik limitleri
+- **💾 Secure Data Processing** - Güvenli veri işleme altyapısı
 
-## v1.4.2 – Önceki Güncellemeler
+## v1.4.3 – AI Sağlayıcı Sistemi
 
-- **%0 placeholder sorunu çözüldü** (≈%<1 dönüşümü)
-- **"Dayanak veri: N/A" temizliği güçlendirildi** → "Dayanak veri: veri yok"
-- **"-soru- soru-" tekrar hatası düzeltildi** → "— Sorumlu —"
-- **Excel çıktısında kapsamlı metin temizliği**
-- **X/Y saat placeholder'ları** "veri yok" ile değiştirildi
-- **Yönetici Aksiyon Panosu** 7-10 spesifik madde ile güçlendirildi
-- **Haftalık ortalama duruş süresi** hesaplama eklendi
+- Çoklu AI Sağlayıcı Desteği - OpenAI, Anthropic Claude, xAI Grok
+- Dinamik Model Seçimi - Provider switching ve model dropdown sistemi
+- Kapsamlı Kod Dokümantasyonu - Detaylı yorum satırları eklendi
+- AI Analiz Kalitesi Artırma - Anti-hallucination sistemleri
+- Gelişmiş Prompt Engineering - Kısıt sistemleri ve optimizasyon
+- Token Usage Tracking - API kullanım izleme ve raporlama
+- Base URL Konfigürasyonu - xAI için özel endpoint desteği
+- Provider-Specific Optimizasyon - Sağlayıcı bazlı parametre ayarları
+
+## v1.4.2 – Kalite Güncellemesi
+
+- %0 placeholder sorunu çözüldü (≈%<1 dönüşümü)
+- "Dayanak veri: N/A" temizliği güçlendirildi → "Dayanak veri: veri yok"
+- "-soru- soru-" tekrar hatası düzeltildi → "— Sorumlu —"
+- Excel çıktısında kapsamlı metin temizliği
+- X/Y saat placeholder'ları "veri yok" ile değiştirildi
+- Yönetici Aksiyon Panosu 7-10 spesifik madde ile güçlendirildi
+- Haftalık ortalama duruş süresi hesaplama eklendi
 
 ## v1.4.1 – Önceki Güncellemeler
 
@@ -41,24 +54,33 @@ Bu sistem, SoftExpert'ten alınan vardiya defteri kayıtlarını analiz edip gü
 
 ## v1.4.0 – Güvenli İş Zekası Sistemi
 
-- **Maliyet Uydurma Önleme Sistemi** - Sadece veriye dayalı analiz
-- **Güvenli Prompt Sistemi** - Halüsinasyon önleme kuralları
-- **Operasyonel Etki Analizi** - Gerçekçi iş etkisi değerlendirmesi
-- **Kaynak İhtiyacı Analizi** - Pratik kaynak planlaması
-- **Basit ve Çalışan GUI** - Karmaşıklık azaltıldı
-- **Toggle Butonları Kaldırıldı** - Daha stabil arayüz
+- Maliyet Uydurma Önleme Sistemi - Sadece veriye dayalı analiz
+- Güvenli Prompt Sistemi - Halüsinasyon önleme kuralları
+- Operasyonel Etki Analizi - Gerçekçi iş etkisi değerlendirmesi
+- Kaynak İhtiyacı Analizi - Pratik kaynak planlaması
+- Basit ve Çalışan GUI - Karmaşıklık azaltıldı
+- Toggle Butonları Kaldırıldı - Daha stabil arayüz
 
-## 🔒 **v1.1.0 Güvenlik Güncellemesi**
+## v1.1.0 Güvenlik Güncellemesi
 
-**CRITICAL UPDATE**: API key güvenliği artırıldı!
-- ❌ **Kaldırıldı**: Kodda sabit API key'ler
-- ✅ **Eklendi**: Kullanıcı bazlı API key girişi
-- 🔐 **Güvenli**: Her kullanıcı kendi key'ini kullanır
-- 💡 **Yardım**: API key alma rehberi eklendi
+CRITICAL UPDATE: API key güvenliği artırıldı!
+- Kaldırıldı: Kodda sabit API key'ler
+- Eklendi: Kullanıcı bazlı API key girişi
+- Güvenli: Her kullanıcı kendi key'ini kullanır
+- Yardım: API key alma rehberi eklendi
 
 [📋 Tüm değişiklikleri gör](CHANGELOG.md)
 
 ## ✨ Özellikler
+
+### 🛡️ Enterprise-Grade Güvenlik (v1.5.0)
+- **Security Audit Logging** - Tüm işlemlerin detaylı loglanması
+- **File Security Validation** - Dosya imzası ve magic number kontrolü  
+- **Malware Protection** - Zararlı dosya tespit sistemi
+- **Path Traversal Protection** - Güvenli dosya yolu kontrolü
+- **Session Tracking** - Kullanıcı aktivite izleme
+- **Structured Audit Trail** - JSON formatında security log'ları
+- **File Size & Integrity Controls** - Boyut ve bütünlük kontrolleri
 
 ### 🔒 KVKK Uyumluluğu
 - Kişisel verileri otomatik tespit ve temizleme
@@ -140,13 +162,21 @@ Workspace'teki tüm Excel dosyalarını otomatik analiz eder.
 akilli_uretim_gunlugu_asistani/
 ├── 📄 excel_analyzer.py      # Ana analiz motoru
 ├── 🖥️ vardiya_gui.py         # GUI arayüzü
+├── 🛡️ security_audit.py      # Güvenlik audit sistemi
+├── 🔒 file_security.py       # Dosya güvenlik validation
 ├── 🎮 demo.py               # Demo scripti
 ├── 📋 requirements.txt      # Python paketleri
 ├── 📖 README.md            # Bu dosya
 ├── 📊 *.xlsx               # Excel dosyaları
-└── 📁 cleaned_data/        # Temizlenmiş veriler
-    ├── clean_file1.xlsx
-    └── clean_file2.xlsx
+├── 📁 cleaned_data/        # Temizlenmiş veriler
+│   ├── clean_file1.xlsx
+│   └── clean_file2.xlsx
+├── 📁 artifacts/           # Export çıktıları
+│   ├── pdf/
+│   └── excel/
+└── 📁 logs/                # Security audit logs
+    ├── audit_20250112.log
+    └── README.md
 ```
 
 ## 🔧 Konfigürasyon
@@ -292,8 +322,22 @@ python demo.py
 - `python -m tkinter` ile test edin
 
 ### Loglama
-Sistem otomatik olarak hataları konsola yazdırır. Detaylı debug için:
+Sistem otomatik olarak hataları konsola yazdırır. **v1.5.0'dan itibaren** kapsamlı security audit logging mevcut:
 
+**🔒 Security Audit Logs:**
+```bash
+# Günlük audit logları
+ls -la logs/
+cat logs/audit_$(date +%Y%m%d).log
+
+# Son 50 güvenlik olayını görüntüle
+tail -n 50 logs/audit_*.log | grep "SECURITY"
+
+# Dosya işlemlerini takip et
+grep "FILE_OPERATION" logs/audit_*.log
+```
+
+**🐛 Debug Logging:**
 ```python
 import logging
 logging.basicConfig(level=logging.DEBUG)
