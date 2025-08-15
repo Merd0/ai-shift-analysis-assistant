@@ -5,6 +5,36 @@ Bu dosya projenin tüm önemli değişikliklerini takip eder.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardına uygun
 Versiyonlama: [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH)
 
+## [1.5.2] - 2025-08-15 - Güvenli Dosya Import Sistemi
+
+### ✨ Yeni Özellikler
+- **🆕 Güvenli Dosya Import Sistemi**: Kullanıcı artık istediği yerden Excel dosyası seçebilir
+- **Otomatik Dosya Kopyalama**: Seçilen dosya otomatik olarak artifacts klasörüne güvenli şekilde kopyalanır
+- **Exe Path Çözümü**: Exe dosyası için gelişmiş path tespit sistemi
+
+### 🔧 Sistem İyileştirmeleri
+- **Path Traversal Kontrolü**: Güvenlik kontrolü güncellendi, sadece şüpheli karakterler kontrol ediliyor
+- **Dosya Seçme Sistemi**: Tamamen yenilenen dosya seçme ve import sistemi
+- **GUI Temizliği**: Gereksiz yazılar ve popup mesajları kaldırıldı
+
+### 🐛 Hata Düzeltmeleri
+- **CRITICAL**: Exe dosyasından çalıştırıldığında path traversal hatası
+- **CRITICAL**: Dosya konumu kısıtlaması kaldırıldı
+- **CRITICAL**: Artifacts klasörü path sorunu çözüldü
+- **UX**: Kullanıcı deneyimi önemli ölçüde iyileştirildi
+
+### 🔨 Teknik Değişiklikler
+- `file_security.py` dosyasına `secure_file_import` metodu eklendi
+- `_check_path_traversal` metodu yeniden yazıldı
+- Exe path tespiti için `sys.executable` kullanıldı
+- Yeni exe dosyası oluşturuldu (PyInstaller ile)
+- `shutil` modülü import edildi dosya kopyalama için
+
+### 📁 Dosya Yapısı
+- Exe dosyası ana dizine taşındı
+- Gereksiz build/dist klasörleri temizlendi
+- .spec dosyası kaldırıldı
+
 ## [1.4.1] - 2025-08-08 - Excel Export & Analiz Tutarlılık Düzeltmeleri
 
 ### Bugfix / İyileştirme

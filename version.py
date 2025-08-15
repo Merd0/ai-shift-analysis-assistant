@@ -9,7 +9,7 @@ Akıllı Üretim Günlüğü Asistanı - Versiyon Bilgileri
 # - GUI ve CLI'da gösterilecek özet/veri sağlayıcı yardımcı fonksiyonlar sunmak
 
 # Semantic Versioning: MAJOR.MINOR.PATCH
-VERSION = "1.5.1"
+VERSION = "1.5.2"
 VERSION_NAME = "Gelişmiş Analiz Optimizasyonları"
 BUILD_DATE = "2025-01-12"
 BUILD_NUMBER = 151

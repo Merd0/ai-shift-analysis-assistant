@@ -7,6 +7,8 @@ Excel dosyalarının güvenli şekilde yüklenmesi ve işlenmesi için
 
 import os
 import re
+import shutil
+import sys
 from typing import Tuple, Optional, List
 import pandas as pd
 from datetime import datetime
@@ -65,6 +67,103 @@ class SecureFileValidator:
             print("⚠️ python-magic kütüphanesi yok - basit kontrol aktif")
             print("   Kurulum: pip install python-magic-bin")
     
+    def secure_file_import(self, source_file_path: str, target_dir: str = "artifacts") -> Tuple[bool, str, str]:
+        """
+        Güvenli dosya import sistemi
+        
+        Kullanıcının seçtiği dosyayı güvenli şekilde artifacts klasörüne kopyalar
+        ve güvenlik kontrollerini yapar.
+        
+        Args:
+            source_file_path: Kullanıcının seçtiği dosya yolu
+            target_dir: Hedef klasör (varsayılan: artifacts)
+            
+        Returns:
+            Tuple[bool, str, str]: (Başarılı_mı, Mesaj, Güvenli_dosya_yolu)
+        """
+        try:
+            # 1. Kaynak dosya varlık kontrolü
+            if not os.path.exists(source_file_path):
+                return False, f"Kaynak dosya bulunamadı: {source_file_path}", ""
+            
+            if not os.path.isfile(source_file_path):
+                return False, f"Belirtilen yol bir dosya değil: {source_file_path}", ""
+            
+            # 2. Hedef klasörü oluştur (yoksa) - Exe için mutlak yol kullan
+            if target_dir == "artifacts":
+                # Exe dosyasının bulunduğu klasörde artifacts klasörü oluştur
+                if getattr(sys, 'frozen', False):
+                    # Exe'den çalıştırılıyor
+                    exe_dir = os.path.dirname(sys.executable)
+                    print(f"🔍 Exe dizini tespit edildi: {exe_dir}")
+                else:
+                    # Python script'ten çalıştırılıyor
+                    exe_dir = os.getcwd()
+                    print(f"🔍 Python çalışma dizini: {exe_dir}")
+                
+                target_dir = os.path.join(exe_dir, "artifacts")
+                print(f"📁 Hedef artifacts dizini: {target_dir}")
+            
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+                print(f"📁 Hedef klasör oluşturuldu: {target_dir}")
+            
+            # 3. Dosya adını güvenli hale getir
+            file_name = os.path.basename(source_file_path)
+            safe_file_name = self._sanitize_filename(file_name)
+            
+            # 4. Hedef dosya yolunu oluştur
+            target_file_path = os.path.join(target_dir, safe_file_name)
+            
+            # 5. Dosya çakışması kontrolü
+            counter = 1
+            original_name, ext = os.path.splitext(safe_file_name)
+            while os.path.exists(target_file_path):
+                safe_file_name = f"{original_name}_{counter}{ext}"
+                target_file_path = os.path.join(target_dir, safe_file_name)
+                counter += 1
+            
+            # 6. Dosyayı kopyala
+            shutil.copy2(source_file_path, target_file_path)
+            print(f"📋 Dosya kopyalandı: {source_file_path} → {target_file_path}")
+            
+            # 7. Kopyalanan dosyada güvenlik kontrolü yap
+            is_safe, message, details = self.validate_file(target_file_path)
+            
+            if not is_safe:
+                # Güvenlik kontrolü başarısız olursa dosyayı sil
+                try:
+                    os.remove(target_file_path)
+                    print(f"❌ Güvenlik kontrolü başarısız - dosya silindi: {target_file_path}")
+                except:
+                    pass
+                return False, f"Güvenlik kontrolü başarısız: {message}", ""
+            
+            # 8. Başarılı import
+            success_msg = f"✅ Dosya güvenli şekilde import edildi: {safe_file_name}"
+            print(success_msg)
+            
+            return True, success_msg, target_file_path
+            
+        except Exception as e:
+            error_msg = f"Dosya import hatası: {str(e)}"
+            print(f"❌ {error_msg}")
+            return False, error_msg, ""
+    
+    def _sanitize_filename(self, filename: str) -> str:
+        """Dosya adını güvenli hale getir"""
+        # Tehlikeli karakterleri kaldır
+        dangerous_chars = ['<', '>', ':', '"', '|', '?', '*', '\\', '/']
+        for char in dangerous_chars:
+            filename = filename.replace(char, '_')
+        
+        # Çok uzun dosya adlarını kısalt
+        if len(filename) > 100:
+            name, ext = os.path.splitext(filename)
+            filename = name[:90] + ext
+        
+        return filename
+
     def validate_file(self, file_path: str, detailed_check: bool = True) -> Tuple[bool, str, dict]:
         """
         Kapsamlı dosya güvenlik kontrolü
@@ -177,19 +276,10 @@ class SecureFileValidator:
             return False, f"Dosya boyutu okunamadı: {str(e)}"
     
     def _check_path_traversal(self, file_path: str) -> Tuple[bool, str]:
-        """Path traversal saldırı kontrolü"""
+        """Path traversal saldırı kontrolü - Sadece şüpheli karakterleri kontrol et"""
         try:
-            # Dosya yolunu normalize et
-            abs_path = os.path.abspath(file_path)
-            
-            # Çalışma dizinini al
-            work_dir = os.path.abspath(os.getcwd())
-            
-            # Path traversal kontrolü - dosya çalışma dizini dışında mı?
-            if not abs_path.startswith(work_dir):
-                return False, "Güvenlik: Dosya çalışma dizini dışında (Path traversal saldırısı)"
-            
-            # Şüpheli path karakterleri
+            # Sadece şüpheli path karakterlerini kontrol et
+            # Artık dosya konumu kontrol edilmiyor - kullanıcı istediği yerden seçebilir
             suspicious_patterns = ['../', '..\\', '%2e%2e', '%2f', '%5c']
             file_path_lower = file_path.lower()
             

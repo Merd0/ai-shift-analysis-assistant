@@ -104,6 +104,7 @@ class VardiyaGUI:
         file_frame = ttk.LabelFrame(frame, text="Excel Dosyası Seç", padding=10)
         file_frame.pack(fill='x', padx=10, pady=5)
         
+        # Dosya seçme butonu
         ttk.Button(file_frame, text="📂 Excel Dosyası Seç", 
                   command=self.select_file).pack(side='left', padx=5)
         
@@ -379,60 +380,65 @@ class VardiyaGUI:
         self.report_preview.pack(fill='both', expand=True)
         
     def select_file(self):
-        """Excel dosyası seç - 🔒 Güvenlik Kontrollü"""
+        """Excel dosyası seç - 🔒 Güvenli Import Sistemi"""
         # Kullanıcı eylemini logla
         self._log_safe(self.audit_logger.log_user_action, "FILE_SELECT_START", "Dosya seçimi başlatıldı")
         
-        # Kullanıcıdan dosya yolu al (Güvenlik: "All files" kaldırıldı)
+        # Kullanıcıdan dosya yolu al (Artık istediği yerden seçebilir!)
         file_path = filedialog.askopenfilename(
-            title="Excel Dosyası Seç",
-            filetypes=[("Excel files", "*.xlsx *.xls")]  # All files kaldırıldı
+            title="Excel Dosyası Seç - İstediğiniz yerden seçebilirsiniz! 📁",
+            filetypes=[("Excel files", "*.xlsx *.xls")]
         )
         
         if file_path:
-            # 🔒 DOSYA GÜVENLİK KONTROLÜ
-            if self.file_validator:
-                is_valid, message, details = self.file_validator.validate_file(file_path, detailed_check=True)
-                
-                # Güvenlik olayını logla
-                self._log_safe(
-                    self.audit_logger.log_security_event,
-                    "FILE_VALIDATION",
-                    "HIGH" if not is_valid else "LOW",
-                    f"Dosya doğrulama: {message}"
-                )
-                
-                if not is_valid:
-                    # Güvenlik riski - dosyayı reddet
-                    messagebox.showerror(
-                        "Güvenlik Hatası",
-                        f"Dosya güvenlik kontrolünden geçmedi:\n\n{message}\n\nLütfen geçerli bir Excel dosyası seçin."
-                    )
+            try:
+                # 🔒 YENİ GÜVENLİ IMPORT SİSTEMİ
+                if self.file_validator:
+                    print(f"📋 Dosya seçildi: {file_path}")
+                    print("🔄 Güvenli import sistemi başlatılıyor...")
+                    
+                    # Dosyayı güvenli şekilde artifacts klasörüne kopyala
+                    is_imported, message, safe_file_path = self.file_validator.secure_file_import(file_path)
+                    
+                    if not is_imported:
+                        # Import başarısız
+                        messagebox.showerror(
+                            "Import Hatası",
+                            f"Dosya güvenli şekilde import edilemedi:\n\n{message}\n\nLütfen başka bir dosya seçin."
+                        )
+                        self._log_safe(
+                            self.audit_logger.log_file_operation,
+                            "FILE_IMPORT_FAILED", file_path, False, message
+                        )
+                        return
+                    
+                    # Import başarılı - güvenli dosya yolunu kullan
+                    self.current_file = safe_file_path
+                    self.file_label.config(text=os.path.basename(safe_file_path))
+                    
+                    # Başarılı import'u logla
                     self._log_safe(
                         self.audit_logger.log_file_operation,
-                        "FILE_REJECTED", file_path, False, message
+                        "FILE_IMPORTED", safe_file_path, True, f"Güvenli import: {message}"
                     )
-                    return
-                
-                # Güvenlik uyarıları varsa bilgilendir
-                if details.get('warnings'):
-                    warning_msg = "\n".join(details['warnings'])
-                    messagebox.showwarning(
-                        "Güvenlik Uyarısı",
-                        f"Dosya kabul edildi ancak dikkat:\n\n{warning_msg}\n\nDevam etmek istiyor musunuz?"
-                    )
-            
-            # Güvenlik kontrollerinden geçti
-            self.current_file = file_path
-            self.file_label.config(text=os.path.basename(file_path))
-            
-            # Başarılı dosya seçimini logla
-            self._log_safe(
-                self.audit_logger.log_file_operation,
-                "FILE_SELECTED", file_path, True, f"Güvenlik kontrolleri geçti: {message if self.file_validator else 'Validator yok'}"
-            )
-            
-            print(f"✅ Dosya seçildi: {os.path.basename(file_path)}")
+                    
+                    # Bilgi mesajı gösterme - sadece console'da yazdır
+                    
+                    print(f"✅ Dosya güvenli şekilde import edildi: {os.path.basename(safe_file_path)}")
+                else:
+                    # Validator yoksa eski yöntem
+                    self.current_file = file_path
+                    self.file_label.config(text=os.path.basename(file_path))
+                    print(f"⚠️ Validator yok - dosya doğrudan kullanılıyor: {os.path.basename(file_path)}")
+                    
+            except Exception as e:
+                error_msg = f"Dosya import hatası: {str(e)}"
+                messagebox.showerror("Hata", error_msg)
+                self._log_safe(
+                    self.audit_logger.log_error,
+                    "FILE_IMPORT_EXCEPTION", error_msg, file_path, True
+                )
+                print(f"❌ {error_msg}")
         else:
             # Kullanıcı iptal etti
             self._log_safe(self.audit_logger.log_user_action, "FILE_SELECT_CANCELLED", "Dosya seçimi iptal edildi")
@@ -922,7 +928,7 @@ class VardiyaGUI:
             )
             messagebox.showerror("Hata", f"PDF export hatası:\n{error_msg}")
             print(f"❌ PDF export hatası: {error_msg}")
-    
+
     def export_excel(self):
         """Excel rapor export et - 🔒 Güvenlik Kontrollü"""
         # OpenPyXL ile çok satırlı metni sığdıracak şekilde hücreleri sarar ve stiller uygular
@@ -930,7 +936,7 @@ class VardiyaGUI:
         # Export başlangıcını logla
         self._log_safe(
             self.audit_logger.log_user_action,
-            "EXCEL_EXPORT_START", "Excel rapor export işlemi başlatıldı"
+            "EXCEL_EXPORT_START", "Excel rapor export işlemi başlatıldı!"
         )
         
         # AI rapor içeriğini kontrol et
@@ -944,6 +950,7 @@ class VardiyaGUI:
         print(f"🔍 Excel Export: AI rapor uzunluğu = {len(ai_report)} karakter")
         
         default_name = f"AI_Analiz_Raporu_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+        
         file_path = filedialog.asksaveasfilename(
             title="Excel Rapor Kaydet",
             defaultextension=".xlsx",
