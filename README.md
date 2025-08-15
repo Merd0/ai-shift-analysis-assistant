@@ -1,26 +1,37 @@
 # Akıllı Üretim Günlüğü Asistanı
 
-**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.5.1 - Gelişmiş Analiz Optimizasyonları**
+**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.5.2 - Güvenli Dosya Import Sistemi**
 
-[![Version](https://img.shields.io/badge/version-1.5.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.2-blue.svg)](CHANGELOG.md)
 [![Security](https://img.shields.io/badge/security-enterprise--grade-darkgreen.svg)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](requirements.txt)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Bu sistem, SoftExpert'ten alınan vardiya defteri kayıtlarını analiz edip günün özeti, sorunlar ve çözümleri gibi ana noktaları listeler. Kişisel verileri otomatik olarak temizleyerek KVKK uyumluluğu sağlar.
 
-## v1.5.1 – 📊 **GELİŞMİŞ ANALİZ OPTİMİZASYONLARI**
+## v1.5.2 – 🚀 **GÜVENLİ DOSYA IMPORT SİSTEMİ**
 
-- **🔢 Advanced Yüzdelik Analiz Sistemi** - Pareto 80/20 kuralı entegrasyonu
-- **💰 Maliyet Uyarı Dialog Sistemi** - Pahalı model seçimi uyarı ve alternatifleri
-- **🚫 Anti-Hallucination Güçlendirme** - Similasyon placeholder engelleme
-- **🎯 Enhanced Prompt System** - Model-specific optimizasyon entegrasyonu
-- **📐 Zorunlu %100 Normalize** - Yüzdelik dağılımların kesin toplamı
-- **🔧 Minimum %5 Kategori Kuralı** - Küçük kategorilerin "Diğer"e dahil edilmesi
-- **🧹 Gelişmiş Sanitization** - Placeholder ve belirsiz ifade temizliği
-- **⚡ GPT-4-turbo Kaldırma** - Token/maliyet optimizasyonu
-- **📋 Proactive Analysis Template** - "Veri yok" yerine çözüm önerisi sistemi
-- **🎪 Pattern & Trend Analizi** - Zaman korelasyonu ve ekipman clustering
+- **🆕 Güvenli Dosya Import Sistemi** - Kullanıcı artık istediği yerden Excel dosyası seçebilir
+- **📋 Otomatik Dosya Kopyalama** - Seçilen dosya otomatik olarak artifacts klasörüne güvenli şekilde kopyalanır
+- **🔍 Exe Path Çözümü** - Exe dosyası için gelişmiş path tespit sistemi
+- **🛡️ Path Traversal Kontrolü** - Güvenlik kontrolü güncellendi, sadece şüpheli karakterler kontrol ediliyor
+- **🎯 Dosya Seçme Sistemi** - Tamamen yenilenen dosya seçme ve import sistemi
+- **🧹 GUI Temizliği** - Gereksiz yazılar ve popup mesajları kaldırıldı
+- **✅ Kullanıcı Deneyimi** - Path traversal hatası tamamen çözüldü
+- **📁 Dosya Yapısı** - Exe dosyası ana dizine taşındı, gereksiz klasörler temizlendi
+
+## v1.5.1 – **GELİŞMİŞ ANALİZ OPTİMİZASYONLARI**
+
+- **Advanced Yüzdelik Analiz Sistemi** - Pareto 80/20 kuralı entegrasyonu
+- **Maliyet Uyarı Dialog Sistemi** - Pahalı model seçimi uyarı ve alternatifleri
+- **Anti-Hallucination Güçlendirme** - Similasyon placeholder engelleme
+- **Enhanced Prompt System** - Model-specific optimizasyon entegrasyonu
+- **Zorunlu %100 Normalize** - Yüzdelik dağılımların kesin toplamı
+- **Minimum %5 Kategori Kuralı** - Küçük kategorilerin "Diğer"e dahil edilmesi
+- **Gelişmiş Sanitization** - Placeholder ve belirsiz ifade temizliği
+- **GPT-4-turbo Kaldırma** - Token/maliyet optimizasyonu
+- **Proactive Analysis Template** - "Veri yok" yerine çözüm önerisi sistemi
+- **Pattern & Trend Analizi** - Zaman korelasyonu ve ekipman clustering
 
 ## v1.5.0 – Güvenlik ve Audit Sistemi
 
@@ -86,7 +97,7 @@ CRITICAL UPDATE: API key güvenliği artırıldı!
 
 ## ✨ Özellikler
 
-### 🛡️ Enterprise-Grade Güvenlik (v1.5.0)
+### 🛡️ Enterprise-Grade Güvenlik (v1.5.0+)
 - **Security Audit Logging** - Tüm işlemlerin detaylı loglanması
 - **File Security Validation** - Dosya imzası ve magic number kontrolü  
 - **Malware Protection** - Zararlı dosya tespit sistemi
@@ -94,6 +105,13 @@ CRITICAL UPDATE: API key güvenliği artırıldı!
 - **Session Tracking** - Kullanıcı aktivite izleme
 - **Structured Audit Trail** - JSON formatında security log'ları
 - **File Size & Integrity Controls** - Boyut ve bütünlük kontrolleri
+
+### 🚀 Güvenli Dosya Import Sistemi (v1.5.2)
+- **Flexible File Selection** - İstediğiniz yerden Excel dosyası seçebilirsiniz
+- **Automatic Security Copy** - Dosya otomatik olarak güvenli klasöre kopyalanır
+- **Exe Path Resolution** - Exe dosyası için gelişmiş path tespit sistemi
+- **Enhanced User Experience** - Path traversal hatası tamamen çözüldü
+- **Smart File Processing** - Güvenli dosya import ve validation sistemi
 
 ### 🔒 KVKK Uyumluluğu
 - Kişisel verileri otomatik tespit ve temizleme
@@ -151,7 +169,19 @@ Demo menüsünden seçenekleri keşfedin:
 2. **GUI Demo**: Grafik arayüz
 3. **Sistem Bilgileri**: Durum kontrolü
 
-### 🖥️ GUI Uygulaması
+### 🚀 Exe Uygulaması (Önerilen)
+```bash
+# Ana dizinde bulunan exe dosyasını çift tıklayın
+Akilli_Uretim_Gunlugu_Asistani.exe
+```
+
+**Avantajlar:**
+- ✅ Python kurulumu gerekmez
+- ✅ Path sorunları çözüldü
+- ✅ İstediğiniz yerden dosya seçebilirsiniz
+- ✅ Otomatik güvenlik kontrolü
+
+### 🖥️ Python GUI Uygulaması
 ```bash
 python vardiya_gui.py
 ```
@@ -173,6 +203,7 @@ Workspace'teki tüm Excel dosyalarını otomatik analiz eder.
 
 ```
 akilli_uretim_gunlugu_asistani/
+├── 🚀 Akilli_Uretim_Gunlugu_Asistani.exe  # Ana uygulama (v1.5.2)
 ├── 📄 excel_analyzer.py      # Ana analiz motoru
 ├── 🖥️ vardiya_gui.py         # GUI arayüzü
 ├── 🛡️ security_audit.py      # Güvenlik audit sistemi
