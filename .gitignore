@@ -8,9 +8,14 @@ git_deploy.py
 
 # Python cache
 __pycache__/
+.cache/
 *.py[cod]
 *$py.class
 *.so
+
+# Virtual environments
+.venv/
+venv/
 
 # Environment variables
 .env
@@ -38,3 +43,8 @@ logs/
 # Temporary files
 temp/
 tmp/
+
+# Local application builds
+build/
+dist/
+*.exe

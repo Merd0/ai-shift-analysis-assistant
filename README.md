@@ -1,418 +1,186 @@
+<div align="center">
+
 # Akıllı Üretim Günlüğü Asistanı
 
-**KVKK Uyumlu Vardiya Analiz Sistemi** | **v1.5.2 - Güvenli Dosya Import Sistemi**
+**Excel tabanlı vardiya kayıtlarını hazırlayan, filtreleyen ve yapay zekâ destekli operasyon raporlarına dönüştüren masaüstü uygulaması.**
 
-[![Version](https://img.shields.io/badge/version-1.5.2-blue.svg)](CHANGELOG.md)
-[![Security](https://img.shields.io/badge/security-enterprise--grade-darkgreen.svg)](CHANGELOG.md)
-[![Python](https://img.shields.io/badge/python-3.8+-brightgreen.svg)](requirements.txt)
+[![Version](https://img.shields.io/badge/version-1.5.2-0f766e.svg)](CHANGELOG.md)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776ab.svg?logo=python&logoColor=white)](requirements.txt)
+[![Platform](https://img.shields.io/badge/platform-Windows-0078d4.svg?logo=windows)](#kurulum)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Bu sistem, SoftExpert'ten alınan vardiya defteri kayıtlarını analiz edip günün özeti, sorunlar ve çözümleri gibi ana noktaları listeler. Kişisel verileri otomatik olarak temizleyerek KVKK uyumluluğu sağlar.
+Vardiya defteri kayıtlarından dönem özeti, tekrar eden sorunlar, operasyonel bulgular ve aksiyon önerileri üretmek için geliştirilmiş bir **staj/portföy projesidir**.
 
-## v1.5.2 – 🚀 **GÜVENLİ DOSYA IMPORT SİSTEMİ**
+</div>
 
-- **🆕 Güvenli Dosya Import Sistemi** - Kullanıcı artık istediği yerden Excel dosyası seçebilir
-- **📋 Otomatik Dosya Kopyalama** - Seçilen dosya otomatik olarak artifacts klasörüne güvenli şekilde kopyalanır
-- **🔍 Exe Path Çözümü** - Exe dosyası için gelişmiş path tespit sistemi
-- **🛡️ Path Traversal Kontrolü** - Güvenlik kontrolü güncellendi, sadece şüpheli karakterler kontrol ediliyor
-- **🎯 Dosya Seçme Sistemi** - Tamamen yenilenen dosya seçme ve import sistemi
-- **🧹 GUI Temizliği** - Gereksiz yazılar ve popup mesajları kaldırıldı
-- **✅ Kullanıcı Deneyimi** - Path traversal hatası tamamen çözüldü
-- **📁 Dosya Yapısı** - Exe dosyası ana dizine taşındı, gereksiz klasörler temizlendi
+![AI analiz ekranı](docs/screenshots/03-ai-analysis.png)
 
-## v1.5.1 – **GELİŞMİŞ ANALİZ OPTİMİZASYONLARI**
+## Projenin amacı
 
-- **Advanced Yüzdelik Analiz Sistemi** - Pareto 80/20 kuralı entegrasyonu
-- **Maliyet Uyarı Dialog Sistemi** - Pahalı model seçimi uyarı ve alternatifleri
-- **Anti-Hallucination Güçlendirme** - Similasyon placeholder engelleme
-- **Enhanced Prompt System** - Model-specific optimizasyon entegrasyonu
-- **Zorunlu %100 Normalize** - Yüzdelik dağılımların kesin toplamı
-- **Minimum %5 Kategori Kuralı** - Küçük kategorilerin "Diğer"e dahil edilmesi
-- **Gelişmiş Sanitization** - Placeholder ve belirsiz ifade temizliği
-- **GPT-4-turbo Kaldırma** - Token/maliyet optimizasyonu
-- **Proactive Analysis Template** - "Veri yok" yerine çözüm önerisi sistemi
-- **Pattern & Trend Analizi** - Zaman korelasyonu ve ekipman clustering
+Üretim sahalarında vardiya kayıtları çoğunlukla Excel dosyalarında ve serbest metin alanlarında tutulur. Bu proje, söz konusu kayıtları tek bir masaüstü akışında işleyerek aşağıdaki süreci kolaylaştırmayı amaçlar:
 
-## v1.5.0 – Güvenlik ve Audit Sistemi
+1. Excel dosyasını içe aktarır.
+2. Kişisel veri olabilecek kolonları sezgisel kurallarla belirler.
+3. Kayıtları seçilen tarih aralığına göre filtreler.
+4. Veriyi seçilen LLM sağlayıcısıyla analiz eder.
+5. Sonucu uygulamada gösterir ve PDF/Excel raporu olarak dışa aktarır.
 
-- Enterprise-Grade Security - Kapsamlı güvenlik altyapısı
-- Security Audit Logging - Tüm işlemlerin JSON formatında loglanması
-- File Security Validation - Magic number ve dosya imzası kontrolü
-- Malware Protection - Zararlı dosya tespit ve engelleme
-- Path Traversal Protection - Güvenli dosya yolu kontrolü
-- Session Tracking - Kullanıcı aktivite izleme sistemi
-- Log Rotation - Otomatik günlük log dosyası döngüsü
-- Structured Logging - JSON formatında audit trail
-- File Size Controls - Dosya boyutu ve güvenlik limitleri
-- Secure Data Processing - Güvenli veri işleme altyapısı
+```text
+Excel dosyası
+      │
+      ▼
+Dosya kontrolleri ──► kişisel veri minimizasyonu ──► tarih filtresi
+                                                        │
+                                                        ▼
+                                              LLM destekli analiz
+                                                        │
+                                                        ▼
+                                               PDF / Excel raporu
+```
 
-## v1.4.3 – AI Sağlayıcı Sistemi
+## Ekran görüntüleri
 
-- Çoklu AI Sağlayıcı Desteği - OpenAI, Anthropic Claude, xAI Grok
-- Dinamik Model Seçimi - Provider switching ve model dropdown sistemi
-- Kapsamlı Kod Dokümantasyonu - Detaylı yorum satırları eklendi
-- AI Analiz Kalitesi Artırma - Anti-hallucination sistemleri
-- Gelişmiş Prompt Engineering - Kısıt sistemleri ve optimizasyon
-- Token Usage Tracking - API kullanım izleme ve raporlama
-- Base URL Konfigürasyonu - xAI için özel endpoint desteği
-- Provider-Specific Optimizasyon - Sağlayıcı bazlı parametre ayarları
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/01-data-preparation.png" alt="Excel verisinin hazırlanması"></td>
+    <td width="50%"><img src="docs/screenshots/02-date-filtering.png" alt="Tarih filtresi ve veri özeti"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Veri hazırlama</strong><br>Kolon analizi ve kişisel veri olabilecek alanların ayrılması</td>
+    <td align="center"><strong>Tarih filtreleme</strong><br>Dönem seçimi ve kolon bazlı veri özeti</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/03-ai-analysis.png" alt="Yapay zekâ destekli vardiya analizi"></td>
+    <td width="50%"><img src="docs/screenshots/04-report-preview.png" alt="Rapor önizleme ekranı"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>AI analizi</strong><br>Yönetici özeti, sorunlar ve öneriler</td>
+    <td align="center"><strong>Rapor önizleme</strong><br>Sonucun dışa aktarılmadan önce incelenmesi</td>
+  </tr>
+</table>
 
-## v1.4.2 – Kalite Güncellemesi
+> Ekran görüntülerindeki API anahtarı alanı maskelidir. Depoda API anahtarı veya Excel kaynak dosyası tutulmaz.
 
-- %0 placeholder sorunu çözüldü (≈%<1 dönüşümü)
-- "Dayanak veri: N/A" temizliği güçlendirildi → "Dayanak veri: veri yok"
-- "-soru- soru-" tekrar hatası düzeltildi → "— Sorumlu —"
-- Excel çıktısında kapsamlı metin temizliği
-- X/Y saat placeholder'ları "veri yok" ile değiştirildi
-- Yönetici Aksiyon Panosu 7-10 spesifik madde ile güçlendirildi
-- Haftalık ortalama duruş süresi hesaplama eklendi
+## Öne çıkan özellikler
 
-## v1.4.1 – Önceki Güncellemeler
+- `.xlsx` vardiya kayıtlarını okuma (`.xls` desteği ortam ve `xlrd` uyumluluğuna bağlıdır)
+- Birden fazla Excel sayfasını birleştirerek analiz etme
+- Kolon adı ve içerik örnekleri üzerinden kişisel veri adayı tespiti
+- 1/7/30/60/90/180 günlük veya özel tarih aralığı filtresi
+- OpenAI, Anthropic ve xAI sağlayıcı seçenekleri
+- Yönetici özeti, sorun analizi, çözüm önerileri ve trend değerlendirmesi
+- PDF ve Excel rapor çıktısı
+- JSON biçiminde yerel işlem/audit kayıtları
+- Dosya boyutu, uzantı ve imza kontrolleri
 
-- Excel export metin/format düzeltmeleri (ayraç/bullet temizliği, wrap)
-- Excel'de "=" ile başlayan satırlar formül algılanmıyor (tek tırnak kaçışı)
-- Dağılım yüzdeleri normalize edilerek Toplam = %100
-- Süre/dağılım parse işlemleri daha dayanıklı
-- API timeout/retry/offline fallback kaldırıldı
-- `artifacts/` klasörlerine otomatik arşivleme
-
-## v1.4.0 – Güvenli İş Zekası Sistemi
-
-- Maliyet Uydurma Önleme Sistemi - Sadece veriye dayalı analiz
-- Güvenli Prompt Sistemi - Halüsinasyon önleme kuralları
-- Operasyonel Etki Analizi - Gerçekçi iş etkisi değerlendirmesi
-- Kaynak İhtiyacı Analizi - Pratik kaynak planlaması
-- Basit ve Çalışan GUI - Karmaşıklık azaltıldı
-- Toggle Butonları Kaldırıldı - Daha stabil arayüz
-
-## v1.1.0 Güvenlik Güncellemesi
-
-CRITICAL UPDATE: API key güvenliği artırıldı!
-- Kaldırıldı: Kodda sabit API key'ler
-- Eklendi: Kullanıcı bazlı API key girişi
-- Güvenli: Her kullanıcı kendi key'ini kullanır
-- Yardım: API key alma rehberi eklendi
-
-[📋 Tüm değişiklikleri gör](CHANGELOG.md)
-
-## ✨ Özellikler
-
-### 🛡️ Enterprise-Grade Güvenlik (v1.5.0+)
-- **Security Audit Logging** - Tüm işlemlerin detaylı loglanması
-- **File Security Validation** - Dosya imzası ve magic number kontrolü  
-- **Malware Protection** - Zararlı dosya tespit sistemi
-- **Path Traversal Protection** - Güvenli dosya yolu kontrolü
-- **Session Tracking** - Kullanıcı aktivite izleme
-- **Structured Audit Trail** - JSON formatında security log'ları
-- **File Size & Integrity Controls** - Boyut ve bütünlük kontrolleri
-
-### 🚀 Güvenli Dosya Import Sistemi (v1.5.2)
-- **Flexible File Selection** - İstediğiniz yerden Excel dosyası seçebilirsiniz
-- **Automatic Security Copy** - Dosya otomatik olarak güvenli klasöre kopyalanır
-- **Exe Path Resolution** - Exe dosyası için gelişmiş path tespit sistemi
-- **Enhanced User Experience** - Path traversal hatası tamamen çözüldü
-- **Smart File Processing** - Güvenli dosya import ve validation sistemi
-
-### 🔒 KVKK Uyumluluğu
-- Kişisel verileri otomatik tespit ve temizleme
-- İsim, telefon, TC no gibi bilgileri kaldırma
-- Sadece işle ilgili verileri analiz etme
-
-### 📊 Veri Analizi
-- Excel dosyalarını otomatik okuma ve analiz
-- Tarih bazlı filtreleme (1/7/30/60/90/180 gün)
-- Özel tarih aralığı seçimi
-- Otomatik kolon tespit sistemi
-
-### 🤖 AI Destekli Analiz
-- OpenAI GPT-4o-mini entegrasyonu
-- Genel özet ve sorun analizi
-- Çözüm önerileri ve trend analizi
-- Performans metrikleri hesaplama
-
-### 🖥️ Kullanıcı Dostu Arayüz
-- Modern GUI arayüzü
-- Sekme bazlı organizasyon
-- Gerçek zamanlı progress gösterimi
-- Çoklu export seçenekleri
-
-## 🚀 Kurulum
+## Kurulum
 
 ### Gereksinimler
+
+- Windows 10 veya 11
 - Python 3.8+
-- Windows 10/11
+- Tkinter (standart Python Windows kurulumunda genellikle hazır gelir)
+- AI analizi için desteklenen sağlayıcılardan bir API anahtarı
 
-### Hızlı Kurulum
-```bash
-# Projeyi indirin
-git clone <repo-url>
-cd akilli_uretim_gunlugu_asistani
+### Hızlı başlangıç
 
-# Gerekli paketleri yükleyin
-pip install -r requirements.txt
-```
+```powershell
+git clone https://github.com/Merd0/ai-shift-analysis-assistant.git
+cd ai-shift-analysis-assistant
 
-### Manuel Kurulum
-```bash
-pip install pandas openpyxl numpy openai
-```
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 
-## 📖 Kullanım
-
-### 🎮 Demo ile Başlayın
-```bash
-python demo.py
-```
-
-Demo menüsünden seçenekleri keşfedin:
-1. **Konsol Demo**: Otomatik analiz
-2. **GUI Demo**: Grafik arayüz
-3. **Sistem Bilgileri**: Durum kontrolü
-
-### 🚀 Exe Uygulaması (Önerilen)
-```bash
-# Ana dizinde bulunan exe dosyasını çift tıklayın
-Akilli_Uretim_Gunlugu_Asistani.exe
-```
-
-**Avantajlar:**
-- ✅ Python kurulumu gerekmez
-- ✅ Path sorunları çözüldü
-- ✅ İstediğiniz yerden dosya seçebilirsiniz
-- ✅ Otomatik güvenlik kontrolü
-
-### 🖥️ Python GUI Uygulaması
-```bash
 python vardiya_gui.py
 ```
 
-**Adımlar:**
-1. **Dosya Analizi**: Excel dosyası seçin ve analiz edin
-2. **Tarih Filtresi**: Analiz dönemini belirleyin
-3. **AI Analizi**: OpenAI API key'i girin ve analiz başlatın
-4. **Raporlar**: Sonuçları PDF/Excel olarak export edin
+Windows terminalinde emoji karakterleriyle ilgili bir kodlama hatası görülürse uygulama UTF-8 modu etkinleştirilerek başlatılabilir:
 
-### 📋 Konsol Analizi
-```bash
-python excel_analyzer.py
-```
-
-Workspace'teki tüm Excel dosyalarını otomatik analiz eder.
-
-## 📁 Proje Yapısı
-
-```
-akilli_uretim_gunlugu_asistani/
-├── 🚀 Akilli_Uretim_Gunlugu_Asistani.exe  # Ana uygulama (v1.5.2)
-├── 📄 excel_analyzer.py      # Ana analiz motoru
-├── 🖥️ vardiya_gui.py         # GUI arayüzü
-├── 🛡️ security_audit.py      # Güvenlik audit sistemi
-├── 🔒 file_security.py       # Dosya güvenlik validation
-├── 🎮 demo.py               # Demo scripti
-├── 📋 requirements.txt      # Python paketleri
-├── 📖 README.md            # Bu dosya
-├── 📊 *.xlsx               # Excel dosyaları
-├── 📁 cleaned_data/        # Temizlenmiş veriler
-│   ├── clean_file1.xlsx
-│   └── clean_file2.xlsx
-├── 📁 artifacts/           # Export çıktıları
-│   ├── pdf/
-│   └── excel/
-└── 📁 logs/                # Security audit logs
-    ├── audit_20250112.log
-    └── README.md
-```
-
-## 🔧 Konfigürasyon
-
-### OpenAI API Ayarları
-1. [OpenAI hesabı](https://platform.openai.com/) oluşturun
-2. API key alın
-3. GUI'de API key'i girin
-
-<!-- Finansal tahmin içerikleri kaldırıldı -->
-
-### Tarih Filtreleme
-- **Hazır seçenekler**: 1, 7, 30, 60, 90, 180 gün
-- **Özel aralık**: YYYY-MM-DD formatında
-- **Tüm veriler**: Filtresiz analiz
-
-## 📊 Veri Yapısı
-
-### Desteklenen Formatlar
-- ✅ Excel (.xlsx, .xls)
-- ✅ SoftExpert export formatları
-- ✅ Türkçe kolon isimleri
-
-### Otomatik Tespit Edilen Kolonlar
-- 📅 **Tarih**: Tarih, Date, Zaman, Time
-- 🔒 **Kişisel**: İsim, Ad, Telefon, TC, Email
-- ✅ **Güvenli**: Vardiya, Sorun, Çözüm, Makine
-
-## 🤖 AI Analiz Türleri
-
-### 📊 Genel Özet
-- Dönem içi ana durumlar
-- Sayısal göstergeler
-- Genel performans değerlendirmesi
-
-### ⚠️ Sorun Analizi
-- Sık yaşanan problemler
-- Sorun kategorileri
-- Etki analizi
-
-### 💡 Çözüm Önerileri
-- Pratik çözüm önerileri
-- Eylem planları
-- Önleyici tedbirler
-
-### 📈 Trend Analizi
-- Zaman içindeki değişimler
-- Mevsimsel etkiler
-- Performans eğilimleri
-
-## 🛡️ KVKK Uyumluluğu
-
-### Otomatik Temizlenen Veriler
-- 👤 İsim, soyisim
-- 📞 Telefon numaraları
-- 🆔 TC kimlik numaraları
-- 📧 Email adresleri
-- 🏠 Adres bilgileri
-
-### Korunan Veriler
-- 📅 Tarih/zaman bilgileri
-- 🏭 Vardiya bilgileri
-- ⚙️ Makine/ekipman verileri
-- 📋 Sorun/çözüm açıklamaları
-- 📊 Üretim metrikleri
-
-## 🔍 Örnekler
-
-### Konsol Çıktısı
-```
-🤖 AKILLI ÜRETİM GÜNLÜĞÜ - EXCEL ANALİZ RAPORU
-============================================================
-
-📊 GENEL ÖZET:
-   • Toplam dosya: 4
-   • Toplam satır: 13,244
-   • KVKK nedeniyle kaldırılan kolon: 2
-
-📁 DOSYA DETAYLARI:
-   📄 vardiya_kayitlari.xlsx
-      • Boyut: 177.9 KB
-      • Satır: 2,070
-      • Orijinal kolon: 9
-      • Temiz kolon: 9
-      • Tarih kolonları: Tarih, Vardiya
-```
-
-### AI Analiz Örneği
-```
-🤖 AI ANALİZ SONUCU
-==================================================
-
-1. GENEL ÖZET:
-   • Son 30 günde 156 vardiya kaydı analiz edildi
-   • Toplam 23 farklı sorun türü tespit edildi
-   • Ortalama günlük 5.2 kayıt
-
-2. SORUN ANALİZİ:
-   • En sık sorun: Malzeme gecikmesi (%34)
-   • İkinci sırada: Makine arızası (%28)
-   • Üçüncü sırada: Personel eksikliği (%18)
-
-3. ÇÖZÜM ÖNERİLERİ:
-   • Tedarikçi alternatifi geliştirin
-   • Preventif bakım planı oluşturun
-   • Vardiya planlamasını optimize edin
-```
-
-## 🔧 Geliştirme
-
-### Yeni Özellikler Ekleme
-1. `excel_analyzer.py` - Veri işleme
-2. `vardiya_gui.py` - Arayüz geliştirme
-3. `demo.py` - Test senaryoları
-
-### Test Etme
-```bash
-# Konsol testi
-python excel_analyzer.py
-
-# GUI testi
+```powershell
+$env:PYTHONUTF8 = "1"
 python vardiya_gui.py
+```
 
-# Demo testi
+## Kullanım
+
+1. **Dosya Analizi** sekmesinden Excel dosyasını seçin.
+2. Dosya kontrolü ve kolon analizini çalıştırın.
+3. **Tarih Filtresi** sekmesinden analiz dönemini belirleyin.
+4. **AI Analizi** sekmesinde sağlayıcı, model ve API anahtarını girin.
+5. Analiz sonucunu gözden geçirin.
+6. **Raporlar** sekmesinden PDF veya Excel çıktısı oluşturun.
+
+Uygulama ayrıca aşağıdaki demo menüsüyle başlatılabilir:
+
+```powershell
 python demo.py
 ```
 
-## 🆘 Sorun Giderme
+## Beklenen veri yapısı
 
-### Sık Karşılaşılan Sorunlar
+Uygulama Türkçe ve İngilizce kolon adlarını sezgisel olarak tanımaya çalışır. Sabit bir şema zorunlu değildir; ancak aşağıdaki türde kolonlar sonuç kalitesini artırır:
 
-**❌ Excel dosyası okunamıyor**
-- Dosya formatını kontrol edin (.xlsx, .xls)
-- Dosyanın başka bir programda açık olmadığından emin olun
+| Alan | Örnek kolonlar | Açıklama |
+|---|---|---|
+| Zaman | `Tarih`, `Date`, `Zaman` | Kayıt veya vardiya zamanı |
+| Vardiya | `Vardiya`, `Shift` | Vardiya adı ya da saat aralığı |
+| Ekipman | `Makine`, `Ekipman`, `Unit` | Ünite veya ekipman bilgisi |
+| Olay | `Sorun`, `Açıklama`, `Description` | Operasyon kaydı |
+| Aksiyon | `Çözüm`, `Bakım`, `Action` | Uygulanan ya da önerilen işlem |
 
-**❌ API hatası alıyorum**
-- OpenAI API key'inin doğru olduğunu kontrol edin
-- İnternet bağlantınızı kontrol edin
-- API kotanızı kontrol edin
+Gerçek üretim verisini kullanmadan önce dosyanın yedeğini alın ve kişisel/kurumsal hassas alanları ayrıca kontrol edin.
 
-**❌ GUI açılmıyor**
-- Python Tkinter yüklü olduğundan emin olun
-- `python -m tkinter` ile test edin
+## Proje yapısı
 
-### Loglama
-Sistem otomatik olarak hataları konsola yazdırır. **v1.5.0'dan itibaren** kapsamlı security audit logging mevcut:
-
-**🔒 Security Audit Logs:**
-```bash
-# Günlük audit logları
-ls -la logs/
-cat logs/audit_$(date +%Y%m%d).log
-
-# Son 50 güvenlik olayını görüntüle
-tail -n 50 logs/audit_*.log | grep "SECURITY"
-
-# Dosya işlemlerini takip et
-grep "FILE_OPERATION" logs/audit_*.log
+```text
+.
+├── vardiya_gui.py       # Tkinter masaüstü arayüzü
+├── excel_analyzer.py    # Excel okuma, temizleme ve özetleme
+├── ai_analyzer.py       # LLM sağlayıcıları ve analiz akışı
+├── prompts.py           # Analiz istemleri
+├── file_security.py     # Dosya türü ve bütünlük kontrolleri
+├── security_audit.py    # Yerel audit kayıtları
+├── config.py            # Sağlayıcı/model yapılandırması
+├── demo.py              # Konsol ve GUI demo menüsü
+├── version.py           # Sürüm bilgileri
+└── docs/screenshots/    # README ekran görüntüleri
 ```
 
-**🐛 Debug Logging:**
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
+## Güvenlik ve kişisel veriler
 
-## 📞 Destek
+Bu proje kişisel veri minimizasyonuna yardımcı olan **sezgisel** kontroller içerir; hukuki veya teknik olarak eksiksiz KVKK uyumluluğu garanti etmez.
 
-Sorunlarınız için:
-1. Demo'yu çalıştırıp test edin
-2. Hata mesajlarını kaydedin
-3. Excel dosya formatını kontrol edin
+- Yanlış pozitif ve yanlış negatif tespitler oluşabilir.
+- AI sağlayıcısına gönderilecek veri kullanıcı tarafından kontrol edilmelidir.
+- Sağlayıcının veri saklama ve işleme koşulları ayrıca değerlendirilmelidir.
+- Üretim ortamında kullanımdan önce erişim kontrolü, şifreleme, veri saklama politikası ve güvenlik testi eklenmelidir.
+- AI tarafından üretilen bulgular uzman doğrulaması olmadan operasyonel karar olarak uygulanmamalıdır.
 
-## 🎯 Gelecek Özellikler
+Güvenlik bildirimi için [SECURITY.md](SECURITY.md) dosyasına bakın.
 
-### Planlanan Geliştirmeler
-- 📱 Web tabanlı arayüz
-- 📊 Grafik ve dashboard
-- 🔄 Oracle veritabanı entegrasyonu
-- 📧 Email raporlama
-- 🤖 Gelişmiş ML modelleri
+## Bilinen sınırlamalar
 
-### Katkıda Bulunma
-1. Fork yapın
-2. Feature branch oluşturun
-3. Commit yapın
-4. Pull request gönderin
+- Uygulama masaüstü prototipidir ve çok kullanıcılı değildir.
+- Kişisel veri tespiti kural/sezgi tabanlıdır.
+- Kolon adları ve serbest metin yapısı sonuç kalitesini etkiler.
+- AI çıktısı sağlayıcıya, modele ve kaynak verinin kalitesine göre değişebilir.
+- Word dışa aktarma düğmesi mevcut sürümde henüz işlevsel değildir.
+- Otomatik dosya kontrolleri antivirüs veya sandbox yerine geçmez.
 
-## 📄 Lisans
+## Yol haritası
 
-Bu proje MIT lisansı altında lisanslanmıştır.
+- Fabrika/tesis bazlı kolon eşleştirme profilleri
+- Kanıta bağlı yapılandırılmış AI çıktıları
+- Deterministik KPI ve anomali katmanı
+- Otomatik testler ve veri kalitesi kontrolleri
+- Web tabanlı, çok kullanıcılı sürüm araştırması
 
----
+## Proje bağlamı
 
-**🚀 Hemen başlamak için `python demo.py` komutunu çalıştırın!**
+Bu uygulama, üretim sahasındaki vardiya kayıtlarını daha hızlı inceleme ihtiyacından doğan bir staj projesidir. Depo; çalışan bir prototipi, veri gizliliği farkındalığını ve üretim verisi üzerinde AI destekli analiz yaklaşımını göstermek amacıyla yayımlanmaktadır.
+
+## Lisans
+
+Proje [MIT Lisansı](LICENSE) ile yayımlanmıştır.
