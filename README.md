@@ -40,7 +40,27 @@ File validation --> potential personal-data minimization --> date filtering
 
 ## Screenshots
 
-The Turkish README references screenshots of data preparation, date filtering, AI analysis, and report previews under `docs/screenshots/`. **Those image files are not currently tracked in this repository**, so this page does not display broken image embeds. See the application's source and demo entry point below.
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/01-data-preparation.png" alt="Excel file preparation and personal data columns"></td>
+    <td width="50%"><img src="docs/screenshots/02-date-filtering.png" alt="Date range filtering"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>File preparation</strong> — inspect columns and potential sensitive data</td>
+    <td align="center"><strong>Date filtering</strong> — choose the analysis period</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/03-ai-analysis.png" alt="AI-assisted shift analysis"></td>
+    <td width="50%"><img src="docs/screenshots/04-report-preview.png" alt="Report preview before export"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>AI analysis</strong> — summaries, recurring problems and recommendations</td>
+    <td align="center"><strong>Report preview</strong> — inspect results before export</td>
+  </tr>
+</table>
+
+> API key fields shown in the screenshots are masked. The public repository does not contain production Excel source data or API secrets.
+
 
 ## Key features
 
@@ -128,7 +148,7 @@ Back up source workbooks and review sensitive personal/corporate fields before p
 ├── config.py            # Provider and model configuration
 ├── demo.py              # CLI/GUI demo menu
 ├── version.py           # Version information
-└── docs/screenshots/    # Referenced screenshots; not currently tracked
+└── docs/screenshots/    # Tracked README screenshots
 ```
 
 ## Security and personal data
