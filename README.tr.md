@@ -15,8 +15,6 @@ Vardiya defteri kayıtlarından dönem özeti, tekrar eden sorunlar, operasyonel
 
 </div>
 
-![AI analiz ekranı](docs/screenshots/03-ai-analysis.png)
-
 ## Projenin amacı
 
 Üretim sahalarında vardiya kayıtları çoğunlukla Excel dosyalarında ve serbest metin alanlarında tutulur. Bu proje, söz konusu kayıtları tek bir masaüstü akışında işleyerek aşağıdaki süreci kolaylaştırmayı amaçlar:
@@ -40,28 +38,11 @@ Dosya kontrolleri ──► kişisel veri minimizasyonu ──► tarih filtresi
                                                PDF / Excel raporu
 ```
 
-## Ekran görüntüleri
+## Arayüz ve uygulama akışı
 
-<table>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/01-data-preparation.png" alt="Excel verisinin hazırlanması"></td>
-    <td width="50%"><img src="docs/screenshots/02-date-filtering.png" alt="Tarih filtresi ve veri özeti"></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Veri hazırlama</strong><br>Kolon analizi ve kişisel veri olabilecek alanların ayrılması</td>
-    <td align="center"><strong>Tarih filtreleme</strong><br>Dönem seçimi ve kolon bazlı veri özeti</td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/03-ai-analysis.png" alt="Yapay zekâ destekli vardiya analizi"></td>
-    <td width="50%"><img src="docs/screenshots/04-report-preview.png" alt="Rapor önizleme ekranı"></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>AI analizi</strong><br>Yönetici özeti, sorunlar ve öneriler</td>
-    <td align="center"><strong>Rapor önizleme</strong><br>Sonucun dışa aktarılmadan önce incelenmesi</td>
-  </tr>
-</table>
+Uygulama dört ana iş akışı içerir: **Dosya Analizi**, **Tarih Filtresi**, **AI Analizi** ve **Raporlar**. Veri hazırlama ve olası kişisel veri alanlarının kontrolünden sonra analiz dönemi seçilir; sonuç, dışa aktarılmadan önce uygulama içerisinde gözden geçirilir.
 
-> Ekran görüntülerindeki API anahtarı alanı maskelidir. Depoda API anahtarı veya Excel kaynak dosyası tutulmaz.
+> **Not:** Önceki README'de kullanılan ekran görüntüleri Git deposunda bulunmuyor. Kırık görseller yerine gerçek uygulama akışı açıklanmıştır; doğrulanmış görseller eklendiğinde bu bölüm güncellenebilir.
 
 ## Öne çıkan özellikler
 
@@ -147,7 +128,7 @@ Gerçek üretim verisini kullanmadan önce dosyanın yedeğini alın ve kişisel
 ├── config.py            # Sağlayıcı/model yapılandırması
 ├── demo.py              # Konsol ve GUI demo menüsü
 ├── version.py           # Sürüm bilgileri
-└── docs/screenshots/    # README ekran görüntüleri
+└── docs/screenshots/    # Ekran görüntüleri eklendiğinde kullanılacak klasör (şu an depoda yok)
 ```
 
 ## Güvenlik ve kişisel veriler
