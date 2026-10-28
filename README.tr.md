@@ -7,7 +7,7 @@
 **Excel tabanlı vardiya kayıtlarını hazırlayan, filtreleyen ve yapay zekâ destekli operasyon raporlarına dönüştüren masaüstü uygulaması.**
 
 [![Version](https://img.shields.io/badge/version-1.5.2-0f766e.svg)](CHANGELOG.md)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-3776ab.svg?logo=python&logoColor=white)](requirements.txt)
+[![Python](https://img.shields.io/badge/Python-3.11%20(CI)-3776ab.svg?logo=python&logoColor=white)](requirements.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows-0078d4.svg?logo=windows)](#kurulum)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -80,7 +80,7 @@ Dosya kontrolleri ──► kişisel veri minimizasyonu ──► tarih filtresi
 ### Gereksinimler
 
 - Windows 10 veya 11
-- Python 3.8+
+- Python 3.11 (GitHub Actions üzerinde doğrulanan sürüm; diğer Python sürümleri bu CI kapsamında test edilmiyor).
 - Tkinter (standart Python Windows kurulumunda genellikle hazır gelir)
 - AI analizi için desteklenen sağlayıcılardan bir API anahtarı
 
