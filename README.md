@@ -7,7 +7,7 @@
 **A Python desktop application for preparing, filtering, and analyzing Excel-based production shift logs, with AI-assisted operational reporting.**
 
 [![Version](https://img.shields.io/badge/version-1.5.2-0f766e.svg)](CHANGELOG.md)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-3776ab.svg?logo=python&logoColor=white)](requirements.txt)
+[![Python](https://img.shields.io/badge/Python-3.11%20(CI)-3776ab.svg?logo=python&logoColor=white)](requirements.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows-0078d4.svg?logo=windows)](#installation)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -79,7 +79,7 @@ File validation --> potential personal-data minimization --> date filtering
 ### Requirements
 
 - Windows 10 or 11.
-- Python 3.8+.
+- Python 3.11 (verified by GitHub Actions; other Python versions are not covered by the current CI).
 - Tkinter (normally included with standard Python installations on Windows).
 - An API key from a supported provider for AI analysis.
 
